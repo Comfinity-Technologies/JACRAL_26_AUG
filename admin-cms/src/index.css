@@ -1,0 +1,435 @@
+@import "tailwindcss";
+
+/* =========================================================
+   JACRAL — CUSTOM FONT DECLARATIONS
+   ---------------------------------------------------------
+   Place font files in /public/fonts/
+   Expected files:
+     Paradiso.woff2  (decorative serif display — large headings)
+     Bropella.woff2  (stylish serif — secondary headings)
+     SilverGarden.woff2 (script — accent/decorative text)
+   If files are missing, Google Font fallbacks activate automatically.
+   ========================================================= */
+
+@font-face {
+  font-family: "Paradiso";
+  src: url("/fonts/Paradiso.woff2") format("woff2"),
+       url("/fonts/Paradiso.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Bropella";
+  src: url("/fonts/Bropella.woff2") format("woff2"),
+       url("/fonts/Bropella.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Silver Garden";
+  src: url("/fonts/SilverGarden.woff2") format("woff2"),
+       url("/fonts/SilverGarden.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* =========================================================
+   JACRAL — DESIGN TOKENS
+   ========================================================= */
+
+:root {
+  /* Typography – three-font system */
+  --font-display:   "Paradiso",   "Playfair Display", Georgia, serif;   /* hero & page titles */
+  --font-heading:   "Bropella",   "DM Serif Display",  Georgia, serif;   /* section headings  */
+  --font-script:    "Silver Garden", cursive;                             /* decorative accent */
+  --font-body:      "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  /* Brand Colours - JACRAL ICP 2 Swatch Specification */
+  --color-warm-amber:       #E88D36; /* Primary Brand Accent */
+  --color-sunburst-gold:    #FFB800; /* High-Conversion CTA */
+  --color-deep-espresso:   #2C221E; /* Neutral Dark (Text) */
+  --color-botanical-green:  #3B6E4C; /* Secondary Accent */
+  --color-oat-cream:        #FAF6EE; /* Neutral Background */
+  --color-pure-white:       #FFFFFF; /* Card Container */
+
+  /* System Color Map */
+  --color-forest:        #3B6E4C;
+  --color-forest-mid:    #2E583C;
+  --color-forest-light:  #4B855E;
+  --color-cream:         #FAF6EE;
+  --color-cream-dark:    #F2EBDC;
+  --color-cream-deep:    #E8DEC8;
+  --color-accent:        #E88D36;
+  --color-accent-light:  #F4A85B;
+  --color-accent-pale:   #FDF0E2;
+  --color-cta:           #FFB800;
+  --color-text:          #2C221E;
+  --color-muted:         #685B55;
+  --color-border:        #E5DCDB;
+  --color-border-dark:   #D4C8C6;
+
+  /* System */
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background: var(--color-cream);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* =========================================================
+   RESET
+   ========================================================= */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  min-height: 100%;
+  background: var(--color-cream);
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--color-cream);
+  color: var(--color-forest);
+}
+
+h1, h2, h3, h4, h5, h6, p {
+  margin: 0;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+button span { color: inherit; }
+
+button, a, input, textarea, select {
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    opacity 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+button, input, textarea, select {
+  font: inherit;
+}
+
+input, textarea, select {
+  color: var(--color-forest);
+  background-color: #fff;
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--color-muted);
+  opacity: 1;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+}
+
+/* =========================================================
+   JACRAL FONT UTILITY CLASSES
+   ========================================================= */
+
+/* Paradiso — large hero/page titles */
+.font-display {
+  font-family: var(--font-display);
+}
+
+/* Bropella — section headings */
+.font-heading {
+  font-family: var(--font-heading);
+}
+
+/* Silver Garden — decorative script */
+.font-script {
+  font-family: var(--font-script);
+}
+
+/* Body sans-serif */
+.font-body {
+  font-family: var(--font-body);
+}
+
+/* =========================================================
+   JACRAL COLOUR UTILITIES
+   ========================================================= */
+
+.jacral-forest        { color: var(--color-forest); }
+.jacral-forest-bg     { background-color: var(--color-forest); }
+.jacral-cream         { color: var(--color-cream); }
+.jacral-cream-bg      { background-color: var(--color-cream); }
+.jacral-cream-dark-bg { background-color: var(--color-cream-dark); }
+.jacral-accent        { color: var(--color-accent); }
+.jacral-accent-bg     { background-color: var(--color-accent); }
+.jacral-muted         { color: var(--color-muted); }
+
+/* =========================================================
+   PAGE CONTAINER
+   ========================================================= */
+
+.jacral-container {
+  width: 100%;
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+@media (max-width: 640px) {
+  .jacral-container {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
+
+::-webkit-scrollbar        { width: 8px; }
+::-webkit-scrollbar-track  { background: var(--color-cream); }
+::-webkit-scrollbar-thumb  { background: var(--color-border-dark); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-accent); }
+
+::selection {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+/* =========================================================
+   FOCUS ACCESSIBILITY
+   ========================================================= */
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+/* =========================================================
+   JACRAL BUTTON VARIANTS
+   ========================================================= */
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  border-radius: 999px;
+  background: var(--color-forest);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+.btn-primary:hover { background: var(--color-forest-light); transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0); }
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 28px;
+  border-radius: 999px;
+  border: 1.5px solid var(--color-forest);
+  color: var(--color-forest);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.btn-outline:hover { background: var(--color-forest); color: #fff; }
+
+.btn-accent {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  border-radius: 999px;
+  background: var(--color-warm-amber);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.btn-accent:hover { filter: brightness(1.08); }
+
+.btn-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  border-radius: 999px;
+  background: var(--color-sunburst-gold);
+  color: var(--color-deep-espresso);
+  font-weight: 700;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 14px rgba(255, 184, 0, 0.35);
+  transition: all 0.2s ease;
+}
+.btn-cta:hover { filter: brightness(1.05); transform: translateY(-1px); }
+
+
+/* =========================================================
+   JACRAL BADGE
+   ========================================================= */
+
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.badge-forest  { background: var(--color-forest); color: #fff; }
+.badge-accent  { background: var(--color-accent-pale); color: var(--color-forest); }
+.badge-cream   { background: var(--color-cream-dark); color: var(--color-muted); }
+
+/* =========================================================
+   SECTION LABEL
+   ========================================================= */
+
+.section-eyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+/* =========================================================
+   PRODUCT CARD HOVER
+   ========================================================= */
+
+.product-card-hover {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.product-card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(23, 56, 43, 0.12);
+}
+
+/* =========================================================
+   ANNOUNCEMENT BAR SCROLL ANIMATION
+   ========================================================= */
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.marquee-track {
+  animation: marquee 24s linear infinite;
+}
+
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+/* =========================================================
+   BOTANICA INSPIRATION CUSTOM CLASSES
+   ========================================================= */
+
+.botanica-card {
+  border-radius: 24px;
+  background-color: #fff;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(44, 34, 30, 0.03);
+  border: 1px solid var(--color-border);
+}
+
+.botanica-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 32px rgba(44, 34, 30, 0.08);
+}
+
+.product-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background-color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  color: var(--color-text);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.nav-pill {
+  padding: 8px 16px;
+  border-radius: 999px;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.nav-pill:hover {
+  background-color: rgba(44, 34, 30, 0.05);
+}
+
+.section-divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-border-dark), transparent);
+  margin: 4rem 0;
+}
+
+.hero-blob {
+  position: absolute;
+  border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+  animation: morph 8s ease-in-out infinite;
+  z-index: 0;
+  opacity: 0.15;
+}
+
+@keyframes morph {
+  0%, 100% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
+  34% { border-radius: 70% 30% 50% 50% / 30% 30% 70% 70%; }
+  67% { border-radius: 100% 60% 60% 100% / 100% 100% 60% 60%; }
+}
+
+.glass-nav {
+  background: rgba(250, 246, 238, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(229, 220, 219, 0.5);
+}

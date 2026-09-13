@@ -1,0 +1,1 @@
+"""JACRAL admin routes package."""

@@ -1,0 +1,828 @@
+@import "tailwindcss";
+
+/* =========================================================
+   JACRAL — CUSTOM FONT DECLARATIONS
+   ---------------------------------------------------------
+   Place font files in /public/fonts/
+   If files are missing, Google Font fallbacks activate.
+   ========================================================= */
+
+@font-face {
+  font-family: "Paradiso";
+  src: url("/fonts/Paradiso.woff2") format("woff2"),
+       url("/fonts/Paradiso.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Bropella";
+  src: url("/fonts/Bropella.woff2") format("woff2"),
+       url("/fonts/Bropella.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Silver Garden";
+  src: url("/fonts/SilverGarden.woff2") format("woff2"),
+       url("/fonts/SilverGarden.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* =========================================================
+   JACRAL — DESIGN TOKENS
+   ========================================================= */
+
+:root {
+  /* ── Typography – True Elements Inspired (Heebo sans-serif stack) ── */
+  --font-display:   "Heebo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-heading:   "Heebo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-script:    "Heebo", cursive, sans-serif;
+  --font-body:      "Heebo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* ── Brand Colours — JACRAL ICP 2 Swatch Specification ── */
+  --jacral-amber:          #E88D36; /* Warm Amber — Primary Brand Accent */
+  --jacral-green:          #3B6E4C; /* Fresh Botanical Green — Secondary Accent */
+  --jacral-gold:           #FFB800; /* Sunburst Gold — High-Conversion CTA */
+  --jacral-cream:          #FAF6EE; /* Oat Cream — Page Background */
+  --jacral-espresso:       #2C221E; /* Deep Espresso — Dark Text */
+  --jacral-white:          #FFFFFF; /* Pure White — Cards */
+
+  /* ── System Colour Aliases ── */
+  --color-warm-amber:      #E88D36;
+  --color-sunburst-gold:   #FFB800;
+  --color-deep-espresso:   #2C221E;
+  --color-botanical-green: #3B6E4C;
+  --color-oat-cream:       #FAF6EE;
+  --color-pure-white:      #FFFFFF;
+
+  --color-forest:       #3B6E4C;
+  --color-forest-mid:   #2E583C;
+  --color-forest-light: #4B855E;
+  --color-cream:        #FAF6EE;
+  --color-cream-dark:   #F2EBDC;
+  --color-cream-deep:   #E8DEC8;
+  --color-accent:       #E88D36;
+  --color-accent-light: #F4A85B;
+  --color-accent-pale:  #FDF0E2;
+  --color-cta:          #FFB800;
+  --color-text:         #2C221E;
+  --color-muted:        #685B55;
+  --color-border:       #E5DCDB;
+  --color-border-dark:  #D4C8C6;
+
+  /* ── Spacing & Radius ── */
+  --radius-sm:   8px;
+  --radius-md:   16px;
+  --radius-lg:   24px;
+  --radius-xl:   32px;
+  --radius-full: 9999px;
+
+  /* ── Shadows ── */
+  --shadow-sm:  0 2px 8px rgba(44,34,30,0.06);
+  --shadow-md:  0 4px 16px rgba(44,34,30,0.08);
+  --shadow-lg:  0 8px 32px rgba(44,34,30,0.12);
+  --shadow-xl:  0 16px 48px rgba(44,34,30,0.14);
+
+  /* ── System ── */
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background: var(--color-cream);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* =========================================================
+   FLOATING ANIMATIONS FOR BACKGROUND ELEMENTS
+   ========================================================= */
+@keyframes float-slow {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-18px) rotate(4deg);
+  }
+}
+
+@keyframes float-reverse {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(16px) rotate(-5deg);
+  }
+}
+
+.animate-float-slow {
+  animation: float-slow 8s ease-in-out infinite;
+}
+
+.animate-float-reverse {
+  animation: float-reverse 10s ease-in-out infinite;
+}
+
+
+/* =========================================================
+   RESET
+   ========================================================= */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  min-width: 320px;
+  min-height: 100%;
+  background: var(--color-cream);
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--color-cream);
+  color: var(--color-text);
+}
+
+h1, h2, h3, h4, h5, h6, p { margin: 0; }
+
+img { display: block; max-width: 100%; }
+
+a { color: inherit; text-decoration: none; }
+
+button {
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+}
+
+button:disabled { cursor: not-allowed; }
+
+button span { color: inherit; }
+
+button, a, input, textarea, select {
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    opacity 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.25s ease;
+}
+
+button, input, textarea, select { font: inherit; }
+
+input, textarea, select {
+  color: var(--color-text);
+  background-color: #fff;
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--color-muted);
+  opacity: 1;
+}
+
+input:focus, textarea:focus, select:focus { outline: none; }
+
+/* =========================================================
+   FONT UTILITY CLASSES
+   ========================================================= */
+
+.font-display  { font-family: var(--font-display); }
+.font-heading  { font-family: var(--font-heading); }
+.font-script   { font-family: var(--font-script); }
+.font-body     { font-family: var(--font-body); }
+
+/* =========================================================
+   COLOUR UTILITIES
+   ========================================================= */
+
+.jacral-forest        { color: var(--color-forest); }
+.jacral-forest-bg     { background-color: var(--color-forest); }
+.jacral-cream         { color: var(--color-cream); }
+.jacral-cream-bg      { background-color: var(--color-cream); }
+.jacral-cream-dark-bg { background-color: var(--color-cream-dark); }
+.jacral-accent        { color: var(--color-accent); }
+.jacral-accent-bg     { background-color: var(--color-accent); }
+.jacral-muted         { color: var(--color-muted); }
+
+/* =========================================================
+   PAGE CONTAINER
+   ========================================================= */
+
+.jacral-container {
+  width: 100%;
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+@media (max-width: 640px) {
+  .jacral-container {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
+
+::-webkit-scrollbar        { width: 6px; }
+::-webkit-scrollbar-track  { background: var(--color-cream); }
+::-webkit-scrollbar-thumb  { background: var(--color-border-dark); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-accent); }
+
+::selection { background: var(--color-accent); color: #fff; }
+
+/* =========================================================
+   FOCUS ACCESSIBILITY
+   ========================================================= */
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+/* =========================================================
+   BUTTON VARIANTS — Natura Market Inspired
+   ========================================================= */
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 28px;
+  border-radius: var(--radius-full);
+  background: var(--color-forest);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.875rem;
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 14px rgba(59,110,76,0.3);
+  transition: background 0.2s ease, transform 0.18s ease, box-shadow 0.2s ease;
+}
+.btn-primary:hover {
+  background: var(--color-forest-light);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(59,110,76,0.35);
+}
+.btn-primary:active { transform: translateY(0); }
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--color-forest);
+  color: var(--color-forest);
+  font-weight: 600;
+  font-size: 0.875rem;
+  background: transparent;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.18s ease;
+}
+.btn-outline:hover {
+  background: var(--color-forest);
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.btn-accent {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 28px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.875rem;
+  box-shadow: 0 4px 14px rgba(232,141,54,0.3);
+}
+.btn-accent:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+/* PRIMARY CTA — Sunburst Gold (Natura Market yellow-green button inspired) */
+.btn-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 28px;
+  border-radius: var(--radius-full);
+  background: var(--color-cta);
+  color: var(--color-deep-espresso);
+  font-weight: 700;
+  font-size: 0.875rem;
+  box-shadow: 0 4px 14px rgba(255,184,0,0.35);
+  transition: all 0.2s ease;
+}
+.btn-cta:hover {
+  filter: brightness(1.05);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(255,184,0,0.4);
+}
+
+/* =========================================================
+   BADGE
+   ========================================================= */
+
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.badge-forest  { background: var(--color-forest); color: #fff; }
+.badge-accent  { background: var(--color-accent-pale); color: var(--color-forest); }
+.badge-cream   { background: var(--color-cream-dark); color: var(--color-muted); }
+.badge-gold    { background: var(--color-cta); color: var(--color-espresso); }
+
+/* =========================================================
+   SECTION LABEL / EYEBROW
+   ========================================================= */
+
+.section-eyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+/* =========================================================
+   PRODUCT CARD
+   ========================================================= */
+
+.product-card-hover {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.product-card-hover:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 40px rgba(44,34,30,0.12);
+}
+
+/* =========================================================
+   ANNOUNCEMENT BAR SCROLL ANIMATION
+   ========================================================= */
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.marquee-track { animation: marquee 28s linear infinite; }
+.marquee-track:hover { animation-play-state: paused; }
+
+/* =========================================================
+   NATURA MARKET INSPIRED CARD SYSTEM
+   ========================================================= */
+
+/* Base card — white container with rounded corners (matches reference) */
+.natura-card {
+  border-radius: var(--radius-lg);
+  background-color: #fff;
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+}
+
+.natura-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Alias for existing references */
+.botanica-card {
+  border-radius: var(--radius-lg);
+  background-color: #fff;
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+}
+
+.botanica-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Floating info card (like the "100% Natural" and "Same Day Delivery" cards in reference) */
+.floating-card {
+  background: #fff;
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 32px rgba(44,34,30,0.12);
+  border: 1px solid rgba(229,220,219,0.6);
+  backdrop-filter: blur(12px);
+}
+
+/* Product image tag */
+.product-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  background-color: rgba(255,255,255,0.92);
+  backdrop-filter: blur(8px);
+  color: var(--color-text);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+/* =========================================================
+   NAVIGATION
+   ========================================================= */
+
+.nav-pill {
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  transition: all 0.2s ease;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.nav-pill:hover { background-color: rgba(44,34,30,0.06); }
+
+/* Glass nav — matches reference's floating rounded nav */
+.glass-nav {
+  background: rgba(250,246,238,0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(229,220,219,0.4);
+}
+
+/* =========================================================
+   SECTION DIVIDER
+   ========================================================= */
+
+.section-divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-border-dark), transparent);
+  margin: 4rem 0;
+}
+
+/* =========================================================
+   HERO — Natura Market Style
+   ========================================================= */
+
+/* Large organic blob decorations */
+.hero-blob {
+  position: absolute;
+  border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+  animation: morph 10s ease-in-out infinite;
+  z-index: 0;
+  opacity: 0.12;
+  pointer-events: none;
+}
+
+@keyframes morph {
+  0%, 100% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
+  34%       { border-radius: 70% 30% 50% 50% / 30% 30% 70% 70%; }
+  67%       { border-radius: 100% 60% 60% 100% / 100% 100% 60% 60%; }
+}
+
+/* Floating animation for trust cards */
+@keyframes float-y {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
+}
+
+@keyframes float-y-delayed {
+  0%, 100% { transform: translateY(-6px); }
+  50%       { transform: translateY(4px); }
+}
+
+.float-anim { animation: float-y 4s ease-in-out infinite; }
+.float-anim-delayed { animation: float-y-delayed 5s ease-in-out infinite; }
+
+/* Entrance fade-up (CSS, no library needed) */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fade-up         { animation: fade-up 0.6s ease forwards; }
+.fade-up-1       { animation: fade-up 0.6s 0.1s ease both; }
+.fade-up-2       { animation: fade-up 0.6s 0.2s ease both; }
+.fade-up-3       { animation: fade-up 0.6s 0.35s ease both; }
+.fade-up-4       { animation: fade-up 0.6s 0.5s ease both; }
+.fade-up-5       { animation: fade-up 0.6s 0.65s ease both; }
+
+/* =========================================================
+   TRUST STRIP (bottom of hero — matches reference)
+   ========================================================= */
+
+.trust-strip {
+  border-radius: var(--radius-lg);
+  background: #fff;
+  box-shadow: 0 4px 24px rgba(44,34,30,0.08);
+  border: 1px solid rgba(229,220,219,0.6);
+}
+
+/* =========================================================
+   TOAST NOTIFICATION
+   ========================================================= */
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(100%); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slide-out-right {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(100%); }
+}
+
+.toast-enter { animation: slide-in-right 0.3s ease forwards; }
+.toast-exit  { animation: slide-out-right 0.3s ease forwards; }
+
+/* =========================================================
+   SKELETON LOADER
+   ========================================================= */
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f0ebe3 25%, #faf6ee 50%, #f0ebe3 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite;
+  border-radius: var(--radius-md);
+}
+
+/* =========================================================
+   FORM INPUTS — Premium Style
+   ========================================================= */
+
+.input-field {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--color-border);
+  background: #fff;
+  color: var(--color-text);
+  font-size: 0.9rem;
+  font-family: var(--font-body);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-field:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(232,141,54,0.12);
+}
+
+.input-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 6px;
+  letter-spacing: 0.02em;
+}
+
+/* =========================================================
+   QUANTITY SELECTOR
+   ========================================================= */
+
+.qty-selector {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  background: #fff;
+}
+
+.qty-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text);
+  transition: background 0.15s ease;
+  flex-shrink: 0;
+}
+
+.qty-btn:hover:not(:disabled) { background: var(--color-cream-dark); }
+.qty-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.qty-value {
+  width: 42px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--color-text);
+  padding: 0 4px;
+}
+
+/* =========================================================
+   CATEGORY CARD HOVER
+   ========================================================= */
+
+.cat-card-img {
+  transition: transform 0.5s ease;
+}
+
+.group:hover .cat-card-img {
+  transform: scale(1.06);
+}
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .marquee-track { animation: none; }
+  .float-anim, .float-anim-delayed { animation: none; }
+  .hero-blob { animation: none; }
+  .fade-up, .fade-up-1, .fade-up-2, .fade-up-3, .fade-up-4, .fade-up-5 {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* =========================================================
+   ORANGE ACCENT ENHANCEMENTS
+   ========================================================= */
+
+/* Buttons with orange fill */
+.btn-orange {
+  background-color: #E88D36;
+  color: #2C221E;
+  font-weight: 700;
+  border-radius: 9999px;
+  padding: 0.625rem 1.5rem;
+  transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 14px rgba(232, 141, 54, 0.25);
+}
+.btn-orange:hover {
+  background-color: #D47E2A;
+  color: #ffffff;
+  box-shadow: 0 6px 20px rgba(232, 141, 54, 0.35);
+}
+
+/* Orange outlined variant */
+.btn-orange-outline {
+  border: 2px solid #E88D36;
+  color: #E88D36;
+  font-weight: 700;
+  border-radius: 9999px;
+  padding: 0.625rem 1.5rem;
+  background: transparent;
+  transition: background-color 0.2s, color 0.2s;
+}
+.btn-orange-outline:hover {
+  background-color: #E88D36;
+  color: #2C221E;
+}
+
+/* Focus ring for inputs - orange */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: #E88D36 !important;
+  box-shadow: 0 0 0 3px rgba(232, 141, 54, 0.15);
+}
+
+/* Orange text link */
+.link-orange {
+  color: #E88D36;
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+.link-orange:hover { color: #D47E2A; }
+
+/* =========================================================
+   POLICY PAGE – RICH CONTENT TYPOGRAPHY
+   (Renders HTML stored in the database beautifully)
+   ========================================================= */
+
+.policy-content {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.8;
+  color: #2C221E;
+}
+
+.policy-content h2 {
+  font-family: var(--font-heading);
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #2C221E;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 3px solid #E88D36;
+}
+
+.policy-content h3 {
+  font-family: var(--font-body);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #3B6E4C;
+  margin-top: 2rem;
+  margin-bottom: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.policy-content h3::before {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 1.1em;
+  background: #E88D36;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.policy-content p {
+  margin-bottom: 1rem;
+  color: #444;
+}
+
+.policy-content ul,
+.policy-content ol {
+  margin: 0.75rem 0 1.25rem 1.5rem;
+  padding: 0;
+}
+
+.policy-content li {
+  margin-bottom: 0.4rem;
+  color: #444;
+  position: relative;
+}
+
+.policy-content ul li::marker {
+  color: #E88D36;
+}
+
+.policy-content ol li::marker {
+  color: #E88D36;
+  font-weight: 700;
+}
+
+.policy-content strong {
+  color: #2C221E;
+  font-weight: 700;
+}
+
+.policy-content a {
+  color: #E88D36;
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+.policy-content a:hover { color: #D47E2A; }
+
+/* =========================================================
+   ADMIN INPUT ORANGE FOCUS – applied in admin portals
+   ========================================================= */
+.admin-input:focus {
+  border-color: #E88D36;
+  box-shadow: 0 0 0 3px rgba(232, 141, 54, 0.15);
+  outline: none;
+}
+
+.admin-badge-orange {
+  background-color: rgba(232, 141, 54, 0.12);
+  color: #C97520;
+  font-weight: 700;
+  font-size: 0.7rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
