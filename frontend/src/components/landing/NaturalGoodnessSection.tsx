@@ -1,4 +1,10 @@
 import { useState, useEffect } from "react";
+import { getImageUrl } from "../../utils/image";
+import type { BrandInfo } from "../../types/landingPage";
+
+interface NaturalGoodnessSectionProps {
+  brand?: BrandInfo | null;
+}
 
 const MASCOT_POSES = [
   {
@@ -18,8 +24,13 @@ const MASCOT_POSES = [
   },
 ];
 
-export default function NaturalGoodnessSection() {
+export default function NaturalGoodnessSection({ brand }: NaturalGoodnessSectionProps) {
   const [activePoseIdx, setActivePoseIdx] = useState(0);
+
+  // Resolve the product image: admin-uploaded takes priority, fallback to default
+  const productImageUrl = brand?.natural_goodness_image_url
+    ? getImageUrl(brand.natural_goodness_image_url)
+    : "/images/products_serving_board_clean.jpg";
 
   // Auto-cycle through the 3 boy mascot poses smoothly
   useEffect(() => {
@@ -64,7 +75,7 @@ export default function NaturalGoodnessSection() {
           style={{ background: "radial-gradient(circle, rgba(245,228,176,0.6) 0%, transparent 70%)" }}
         />
 
-        {/* Drifting Leaves matching Video 1 (00:15 - 00:26) */}
+        {/* Drifting Leaves */}
         <img
           src="/images/tropical_leaf.png"
           alt=""
@@ -88,35 +99,52 @@ export default function NaturalGoodnessSection() {
       </div>
 
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* ── On mobile: top row = mascot boy + title side by side; bottom = product image ── */}
+        {/* ── On desktop: left=mascot (5 cols), right=title+image (7 cols) ── */}
         <div className="grid grid-cols-1 lg:grid-cols-12 items-center gap-8 lg:gap-12">
-          
-          {/* Left Column: Mascot Cycling 3 Poses (Cropped at black trousers, 0% leg) */}
-          <div className="lg:col-span-5 flex flex-col items-center lg:items-end justify-center">
-            <div
-              className="mascot-sway relative w-[320px] sm:w-[380px] md:w-[420px] h-[440px] sm:h-[490px] md:h-[530px] flex items-end justify-center cursor-pointer overflow-hidden"
-              onClick={() => setActivePoseIdx((prev) => (prev + 1) % MASCOT_POSES.length)}
-              title="Click to change pose"
-            >
-              {/* Warm circular backplate glow */}
-              <div
-                className="absolute inset-x-8 top-10 bottom-6 rounded-full opacity-40 blur-2xl -z-10 pointer-events-none"
-                style={{ background: "radial-gradient(circle, #E8CBA3 0%, transparent 70%)" }}
-              />
 
-              {/* 3 Mascot Poses with smooth opacity crossfade */}
-              {MASCOT_POSES.map((pose, idx) => (
-                <img
-                  key={pose.src}
-                  src={pose.src}
-                  alt={pose.alt}
-                  className={`absolute bottom-0 w-full h-full object-contain object-bottom transition-opacity duration-700 ease-in-out ${
-                    idx === activePoseIdx ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
-                  }`}
-                  style={{
-                    filter: "drop-shadow(0 18px 30px rgba(50,30,10,0.18))",
-                  }}
-                />
-              ))}
+          {/* Left Column: Mascot Cycling 3 Poses */}
+          <div className="lg:col-span-5 flex flex-col items-center lg:items-end justify-center">
+
+            {/* Mobile: mascot + title in one flex row */}
+            <div className="flex flex-row lg:flex-col items-center lg:items-end w-full lg:w-auto gap-4 lg:gap-0">
+
+              <div
+                className="mascot-sway relative flex-shrink-0 w-[140px] h-[180px] sm:w-[200px] sm:h-[240px] md:w-[320px] md:h-[380px] lg:w-[420px] lg:h-[530px] flex items-end justify-center cursor-pointer overflow-visible"
+                onClick={() => setActivePoseIdx((prev) => (prev + 1) % MASCOT_POSES.length)}
+                title="Click to change pose"
+              >
+                {/* 3 Mascot Poses with smooth opacity crossfade */}
+                {MASCOT_POSES.map((pose, idx) => (
+                  <img
+                    key={pose.src}
+                    src={pose.src}
+                    alt={pose.alt}
+                    className={`absolute bottom-0 w-full h-full object-contain object-bottom transition-opacity duration-700 ease-in-out ${
+                      idx === activePoseIdx ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
+                    }`}
+                    style={{
+                      filter: "drop-shadow(0 18px 30px rgba(50,30,10,0.14))",
+                    }}
+                  />
+                ))}
+              </div>
+
+              {/* Mobile-only: Title + subtitle shown beside mascot */}
+              <div className="lg:hidden flex flex-col items-start justify-center flex-1 min-w-0">
+                <h2
+                  className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-[#285B3C] leading-tight"
+                  style={{ fontFamily: '"Playfair Display", Georgia, serif' }}
+                >
+                  NATURAL<br />GOODNESS
+                </h2>
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="h-px w-5 bg-[#3B6E4C]/40" />
+                  <span className="text-[10px] sm:text-xs font-black uppercase tracking-[0.18em] text-[#3B6E4C] leading-snug">
+                    HEALTHY YOU · BETTER TOMORROW
+                  </span>
+                </div>
+              </div>
             </div>
 
             {/* Pose Indicator Dots */}
@@ -139,9 +167,9 @@ export default function NaturalGoodnessSection() {
 
           {/* Right Column: Title & Serving Board */}
           <div className="lg:col-span-7 flex flex-col items-center lg:items-start text-center lg:text-left">
-            
-            {/* Header Section */}
-            <div className="mb-6 sm:mb-8 space-y-2.5">
+
+            {/* Desktop-only Header Section */}
+            <div className="hidden lg:block mb-6 sm:mb-8 space-y-2.5">
               <h2
                 className="text-4xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-[#285B3C]"
                 style={{ fontFamily: '"Playfair Display", Georgia, serif' }}
@@ -157,11 +185,11 @@ export default function NaturalGoodnessSection() {
               </div>
             </div>
 
-            {/* Serving Board with both pouches */}
+            {/* Serving Board / Product Image */}
             <div className="relative w-full max-w-[680px] rounded-3xl overflow-hidden shadow-[0_16px_45px_rgba(70,40,15,0.14)] border border-[#E8DFC9]/80 bg-white/40 backdrop-blur-sm group">
               <img
-                src="/images/products_serving_board_clean.jpg"
-                alt="JACRAL Oats Apple Cinnamon & Dark Chocolate Serving Board"
+                src={productImageUrl}
+                alt="JACRAL Natural Goodness Product"
                 className="w-full h-auto object-cover group-hover:scale-[1.02] transition-transform duration-700"
               />
             </div>

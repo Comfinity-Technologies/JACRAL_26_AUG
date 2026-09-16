@@ -83,6 +83,60 @@ export default function ProductsSection({ section }: ProductsSectionProps = {}) 
             }
           }
 
+          @keyframes cerealFlowRight {
+            0% {
+              transform: translate3d(-150px, 0, 0) rotate(0deg);
+              opacity: 0;
+            }
+            12% {
+              opacity: 0.95;
+            }
+            88% {
+              opacity: 0.95;
+            }
+            100% {
+              transform: translate3d(calc(100vw + 150px), 30px, 0) rotate(360deg);
+              opacity: 0;
+            }
+          }
+
+          @keyframes cerealFlowLeft {
+            0% {
+              transform: translate3d(calc(100vw + 150px), 0, 0) rotate(0deg);
+              opacity: 0;
+            }
+            12% {
+              opacity: 0.95;
+            }
+            88% {
+              opacity: 0.95;
+            }
+            100% {
+              transform: translate3d(-150px, -30px, 0) rotate(-360deg);
+              opacity: 0;
+            }
+          }
+
+          .cereal-flow-track-1 {
+            animation: cerealFlowRight 15s linear infinite 0s;
+          }
+
+          .cereal-flow-track-2 {
+            animation: cerealFlowLeft 18s linear infinite 3s;
+          }
+
+          .cereal-flow-track-3 {
+            animation: cerealFlowRight 22s linear infinite 7s;
+          }
+
+          .cereal-flow-track-4 {
+            animation: cerealFlowLeft 16s linear infinite 2s;
+          }
+
+          .cereal-flow-track-5 {
+            animation: cerealFlowRight 19s linear infinite 10s;
+          }
+
           .jacral-float-slow {
             animation: jacralFloatSlow 7s ease-in-out infinite;
           }
@@ -108,7 +162,12 @@ export default function ProductsSection({ section }: ProductsSectionProps = {}) 
             .jacral-float-medium,
             .jacral-drift,
             .jacral-reveal,
-            .jacral-pulse {
+            .jacral-pulse,
+            .cereal-flow-track-1,
+            .cereal-flow-track-2,
+            .cereal-flow-track-3,
+            .cereal-flow-track-4,
+            .cereal-flow-track-5 {
               animation: none !important;
             }
           }
@@ -185,104 +244,7 @@ export default function ProductsSection({ section }: ProductsSectionProps = {}) 
           }}
         />
 
-        {/* =======================================================
-            LARGE JACKFRUIT CROSS-SECTION — LEFT SIDE (hero)
-            ======================================================= */}
-
-        <img
-          src="/images/floating_jackfruit.png"
-          alt=""
-          className="jacral-float-slow"
-          style={{
-            position: "absolute",
-            left: "-110px",
-            bottom: "-60px",
-            width: "520px",
-            height: "520px",
-            objectFit: "contain",
-            opacity: 0.96,
-            filter: "drop-shadow(0 20px 40px rgba(60,80,10,0.22))",
-          }}
-        />
-
-        {/* =======================================================
-            JACKFRUIT SHELL — RIGHT SIDE (upper)
-            ======================================================= */}
-
-        <img
-          src="/images/jackfruit_shell.png"
-          alt=""
-          className="jacral-float-medium"
-          style={{
-            position: "absolute",
-            right: "-50px",
-            top: "40px",
-            width: "290px",
-            height: "290px",
-            objectFit: "contain",
-            opacity: 0.90,
-            filter: "drop-shadow(0 14px 30px rgba(60,80,10,0.18))",
-            transform: "rotate(10deg)",
-          }}
-        />
-
-        {/* =======================================================
-            JACKFRUIT PODS — SCATTERED
-            ======================================================= */}
-
-        {/* Pod — top-left */}
-        <img
-          src="/images/jackfruit_pod.png"
-          alt=""
-          className="jacral-drift"
-          style={{
-            position: "absolute",
-            left: "6%",
-            top: "16%",
-            width: "110px",
-            height: "110px",
-            objectFit: "contain",
-            opacity: 0.90,
-            filter: "drop-shadow(0 8px 18px rgba(80,50,0,0.18))",
-            transform: "rotate(-20deg)",
-          }}
-        />
-
-        {/* Pod — top-right */}
-        <img
-          src="/images/jackfruit_pod.png"
-          alt=""
-          className="jacral-float-medium"
-          style={{
-            position: "absolute",
-            right: "9%",
-            top: "26%",
-            width: "88px",
-            height: "88px",
-            objectFit: "contain",
-            opacity: 0.85,
-            filter: "drop-shadow(0 6px 14px rgba(80,50,0,0.16))",
-            transform: "rotate(22deg) scaleX(-1)",
-          }}
-        />
-
-        {/* Pod — bottom-right */}
-        <img
-          src="/images/jackfruit_pod.png"
-          alt=""
-          className="jacral-float-slow"
-          style={{
-            position: "absolute",
-            right: "4%",
-            bottom: "16%",
-            width: "95px",
-            height: "95px",
-            objectFit: "contain",
-            opacity: 0.80,
-            filter: "drop-shadow(0 7px 15px rgba(80,50,0,0.15))",
-            transform: "rotate(38deg)",
-          }}
-        />
+        {/* Removed animated cereals */}
 
         {/* =======================================================
             TROPICAL LEAVES
@@ -559,7 +521,7 @@ export default function ProductsSection({ section }: ProductsSectionProps = {}) 
             -scale-x-100
             opacity-80
           "
-          viewBox="0 0 80 50"
+          viewBox="0 0 50 50"
           fill="none"
         >
           <path
@@ -593,7 +555,7 @@ export default function ProductsSection({ section }: ProductsSectionProps = {}) 
             flex
             min-h-[64px]
             w-full
-            max-w-[1500px]
+            max-w-[150 px]
             flex-col
             items-stretch
             lg:flex-row
@@ -634,13 +596,13 @@ export default function ProductsSection({ section }: ProductsSectionProps = {}) 
           max-w-[1450px]
           px-5
           pb-24
-          pt-20
+          pt-10
           sm:px-8
           sm:pb-28
-          sm:pt-24
+          sm:pt-12
           lg:px-12
           lg:pb-32
-          lg:pt-24
+          lg:pt-12
         "
       >
         {/* =======================================================
@@ -718,9 +680,9 @@ export default function ProductsSection({ section }: ProductsSectionProps = {}) 
             grid
             max-w-[1050px]
             grid-cols-1
-            gap-8
+            gap-5
             md:grid-cols-2
-            lg:gap-10
+            lg:gap-20
           "
         >
           {activeProducts.map((product, index) => (
@@ -736,6 +698,7 @@ export default function ProductsSection({ section }: ProductsSectionProps = {}) 
             >
               <ProductCard
                 product={product}
+                showDescription={false}
               />
             </div>
           ))}

@@ -30,6 +30,7 @@ import {
   adminUpdateHowToUseStep,
   adminDeleteHowToUseStep,
   adminUploadHowToUseStepImage,
+  uploadNaturalGoodnessImage,
 } from "../../services/landingPageService";
 import type { HowToUseStepAdmin } from "../../services/landingPageService";
 import { getImageUrl } from "../../utils/image";
@@ -66,8 +67,10 @@ export default function AdminLandingPageCMS() {
   }>({ step_number: "", title: "", description: "" });
   const [showNewStepForm, setShowNewStepForm] = useState(false);
   const [uploadingStepId, setUploadingStepId] = useState<number | null>(null);
+  const [uploadingNaturalGoodness, setUploadingNaturalGoodness] = useState(false);
 
   const logoInputRef = useRef<HTMLInputElement>(null);
+  const naturalGoodnessInputRef = useRef<HTMLInputElement>(null);
 
 
   const showToast = (message: string, type: "success" | "error" = "success") => {
@@ -182,6 +185,20 @@ export default function AdminLandingPageCMS() {
       showToast(err?.response?.data?.detail || "Image upload failed", "error");
     } finally {
       setUploadingStepId(null);
+    }
+  };
+
+  const handleNaturalGoodnessImageUpload = async (file: File) => {
+    try {
+      setUploadingNaturalGoodness(true);
+      await uploadNaturalGoodnessImage(file);
+      showToast("Natural Goodness image uploaded successfully!");
+      await loadData();
+    } catch (err: any) {
+      showToast(err?.response?.data?.detail || "Image upload failed", "error");
+    } finally {
+      setUploadingNaturalGoodness(false);
+      if (naturalGoodnessInputRef.current) naturalGoodnessInputRef.current.value = "";
     }
   };
 
@@ -684,7 +701,81 @@ export default function AdminLandingPageCMS() {
 
 
 
-      {/* ── FOOTER PUBLISH BAR ── */}
+      {/* ── SECTION 3: NATURAL GOODNESS IMAGE ── */}
+      <div className="rounded-3xl bg-white border border-[#E5DCDB] p-6 md:p-8 shadow-sm space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-[#285B3C]/10 text-[#285B3C] flex items-center justify-center font-black">
+              3
+            </div>
+            <h2 className="text-lg font-black uppercase text-[#2C221E] tracking-tight">
+              NATURAL GOODNESS SECTION IMAGE
+            </h2>
+          </div>
+          <span className="text-[11px] font-bold text-[#685B55] uppercase tracking-wider">
+            Product / Serving Board Photo
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start pt-2">
+          <div className="md:col-span-5 space-y-4">
+            <p className="text-xs font-bold uppercase tracking-wider text-[#2C221E]">
+              Current Image
+            </p>
+            <div className="w-full h-48 rounded-2xl border-2 border-dashed border-[#E5DCDB] bg-[#FAF6EE] flex items-center justify-center p-4 relative overflow-hidden">
+              {data?.brand?.draft_logo_url !== undefined && (() => {
+                const ngUrl = (data?.brand as any)?.natural_goodness_image_url ||
+                  (data?.brand as any)?.draft_natural_goodness_image_url;
+                return ngUrl ? (
+                  <img
+                    src={getImageUrl(ngUrl)}
+                    alt="Natural Goodness Product"
+                    className="max-h-full max-w-full object-contain"
+                  />
+                ) : (
+                  <div className="text-center text-[#685B55] space-y-1">
+                    <ImageIcon size={28} className="mx-auto text-[#E88D36]" />
+                    <p className="text-xs font-bold uppercase tracking-wider">No Image Uploaded</p>
+                    <p className="text-[10px]">Shows default serving board image</p>
+                  </div>
+                );
+              })()}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                ref={naturalGoodnessInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handleNaturalGoodnessImageUpload(f);
+                }}
+                className="hidden"
+                id="natural-goodness-upload-input"
+              />
+              <label
+                htmlFor="natural-goodness-upload-input"
+                className="flex-1 text-center py-2 px-4 rounded-xl bg-[#285B3C] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#1e4429] cursor-pointer shadow-sm transition"
+              >
+                {uploadingNaturalGoodness ? "Uploading..." : "Upload New Image"}
+              </label>
+            </div>
+            <p className="text-[10px] text-[#685B55]">
+              This image appears in the Natural Goodness section on the landing page. Formats: PNG, JPG, WebP. Max 5 MB.
+            </p>
+          </div>
+
+          <div className="md:col-span-7 space-y-3">
+            <p className="text-xs font-bold uppercase tracking-wider text-[#2C221E]">
+              About This Section
+            </p>
+            <p className="text-sm text-[#685B55] leading-relaxed">
+              The Natural Goodness section showcases your product alongside the brand mascot. Upload a high-quality image of your product (e.g., a serving board, pouch lineup, or lifestyle shot) to display here. The image is immediately live upon upload — no Publish step required.
+            </p>
+          </div>
+        </div>
+      </div>
 
       <div className="fixed bottom-0 left-64 right-0 bg-white/95 backdrop-blur-md border-t border-[#E5DCDB] px-8 py-4 flex items-center justify-between shadow-2xl z-40">
         <div className="flex items-center gap-2">

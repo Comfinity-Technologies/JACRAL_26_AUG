@@ -6,18 +6,22 @@ export function getImageUrl(url?: string | null): string {
   if (!url) {
     return "/images/products_serving_board_clean.jpg";
   }
-  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) {
-    return url;
+  let targetUrl = url;
+  if (targetUrl.startsWith("http://localhost:3000")) {
+    targetUrl = targetUrl.replace("http://localhost:3000", "");
+  }
+  if (targetUrl.startsWith("http://") || targetUrl.startsWith("https://") || targetUrl.startsWith("data:")) {
+    return targetUrl;
   }
   if (
-    url.startsWith("/images/") ||
-    url.startsWith("/favicon") ||
-    url.startsWith("/hero") ||
-    url.startsWith("/icons")
+    targetUrl.startsWith("/images/") ||
+    targetUrl.startsWith("/favicon") ||
+    targetUrl.startsWith("/hero") ||
+    targetUrl.startsWith("/icons")
   ) {
-    return url;
+    return targetUrl;
   }
   const baseUrl = (import.meta.env.VITE_API_URL as string) || "http://localhost:8000";
-  const cleanUrl = url.startsWith("/") ? url : `/${url}`;
+  const cleanUrl = targetUrl.startsWith("/") ? targetUrl : `/${targetUrl}`;
   return `${baseUrl}${cleanUrl}`;
 }

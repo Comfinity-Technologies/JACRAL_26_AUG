@@ -21,21 +21,72 @@ export type CartState = {
   total: number;
 };
 
+// --- Global Cart Store ---
+let globalGuestItems: CartItem[] = [];
+try {
+  const stored = localStorage.getItem("jacral_guest_cart");
+  if (stored) globalGuestItems = JSON.parse(stored);
+} catch (e) {
+  console.warn("Failed to load guest cart from local storage", e);
+}
+
+let globalCart: CartState = { items: [], total: 0 };
+let cartListeners: Array<() => void> = [];
+
+const notifyCartListeners = () => {
+  cartListeners.forEach((listener) => listener());
+};
+
+const setGlobalGuestItems = (updater: CartItem[] | ((prev: CartItem[]) => CartItem[])) => {
+  if (typeof updater === "function") {
+    globalGuestItems = updater(globalGuestItems);
+  } else {
+    globalGuestItems = updater;
+  }
+  try {
+    localStorage.setItem("jacral_guest_cart", JSON.stringify(globalGuestItems));
+  } catch (e) {
+    console.warn("Failed to save guest cart to local storage", e);
+  }
+  notifyCartListeners();
+};
+
+const setGlobalCart = (newCart: CartState) => {
+  globalCart = newCart;
+  notifyCartListeners();
+};
+// -------------------------
+
 /**
  * useCart – all cart data is persisted ONLY in the backend database.
- * No localStorage is used. Guest carts are held in React state (memory only)
+ * Guest carts are held in React state (and localStorage)
  * and are synced to the backend when the user logs in.
  */
 export function useCart() {
   const { user } = useAuth();
-  const [cart, setCart] = useState<CartState>({ items: [], total: 0 });
+  
+  // Use local state synced with global state
+  const [cart, setCartState] = useState<CartState>(globalCart);
+  const [guestItems, setGuestItemsState] = useState<CartItem[]>(globalGuestItems);
   const [loading, setLoading] = useState(false);
 
-  // Guest cart lives ONLY in memory (React state), never in localStorage
-  const [guestItems, setGuestItems] = useState<CartItem[]>([]);
+  useEffect(() => {
+    const listener = () => {
+      setCartState(globalCart);
+      setGuestItemsState(globalGuestItems);
+    };
+    cartListeners.push(listener);
+    return () => {
+      cartListeners = cartListeners.filter((l) => l !== listener);
+    };
+  }, []);
 
   // Track if we already merged guest→backend to prevent double-merges
   const mergedRef = useRef(false);
+
+  // Alias state setters to the global ones for the rest of the file
+  const setCart = setGlobalCart;
+  const setGuestItems = setGlobalGuestItems;
 
   // ── Enrich items with product name/image from the API ──
   const enrichCartItems = async (items: CartItem[]) => {

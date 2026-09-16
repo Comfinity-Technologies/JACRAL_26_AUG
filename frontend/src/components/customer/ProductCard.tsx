@@ -1,6 +1,6 @@
 import type { Product } from "../../types/product";
 import { ArrowRight, Leaf, ShoppingBag } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { getImageUrl } from "../../utils/image";
 import { useCart } from "../../hooks/useCart";
@@ -23,10 +23,16 @@ export type ProductCardItem = Product | {
 export interface ProductCardProps {
   product: ProductCardItem;
   onAddToCart?: () => Promise<void> | void;
+  showDescription?: boolean;
 }
 
-export default function ProductCard({ product, onAddToCart }: ProductCardProps) {
+export default function ProductCard({
+  product,
+  onAddToCart,
+  showDescription = true,
+}: ProductCardProps) {
   const { addToCart } = useCart();
+  const navigate = useNavigate();
   const [hovered, setHovered] = useState(false);
 
   const primaryImage = product.image_url
@@ -42,10 +48,16 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
 
   const handleAddToCart = async () => {
     if (isOutOfStock) return;
-    if (onAddToCart) {
-      await onAddToCart();
-    } else {
-      await addToCart(product.id, 1);
+    try {
+      if (onAddToCart) {
+        await onAddToCart();
+      } else {
+        await addToCart(product.id, 1);
+      }
+    } catch (err) {
+      console.error("Failed adding to cart:", err);
+    } finally {
+      navigate("/cart");
     }
   };
 
@@ -130,7 +142,7 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
             ============================================================ */}
         <Link
           to={productUrl}
-          className="relative block w-full pt-6 px-6 pb-2"
+          className="relative block w-full pt-2 px-6 pb-2"
         >
 
 
@@ -201,17 +213,59 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
           </Link>
 
           {/* Description */}
-          <p
-            style={{
-              fontSize: "13px",
-              lineHeight: 1.65,
-              color: "#74695F",
-              minHeight: "44px",
-              flex: 1,
-            }}
-          >
-            {product.description}
-          </p>
+          {showDescription && product.description && (
+            <p
+              style={{
+                fontSize: "13px",
+                lineHeight: 1.65,
+                color: "#74695F",
+                minHeight: "44px",
+                flex: 1,
+                marginBottom: "10px",
+              }}
+            >
+              {product.description}
+            </p>
+          )}
+
+          {/* Price display */}
+          {product.price !== undefined && Number(product.price) > 0 && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                margin: "8px 0",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "19px",
+                  fontWeight: 900,
+                  color: "#1E482E",
+                  letterSpacing: "-0.02em",
+                }}
+              >
+                ₹{product.price}
+              </span>
+              {product.badge && (
+                <span
+                  style={{
+                    fontSize: "10px",
+                    fontWeight: 800,
+                    textTransform: "uppercase",
+                    backgroundColor: "rgba(232,141,54,0.15)",
+                    color: "#C96A1F",
+                    padding: "3px 10px",
+                    borderRadius: "999px",
+                    border: "1px solid rgba(232,141,54,0.3)",
+                  }}
+                >
+                  {product.badge}
+                </span>
+              )}
+            </div>
+          )}
 
           {/* ── GRADIENT DIVIDER ── */}
           <div

@@ -7,51 +7,11 @@ interface HeroSliderProps {
   slides?: HeroSlideType[];
 }
 
-const DEFAULT_HERO_SLIDES: HeroSlideType[] = [
-  {
-    id: 1,
-    slide_number: 1,
-    display_order: 1,
-    title: "SPICED JACKFRUIT PULP & CRISPY JACKFRUIT CHIPS",
-    subtitle: "TROPICAL HARVEST",
-    description: "Plant Based · Healthy · Spicy & Savory",
-    cta_text: "SHOP NOW",
-    cta_url: "/shop",
-    image_url: "/images/hero/hero_jackfruit_products.png",
-    mobile_image_url: "/images/hero/hero_jackfruit_products.png",
-    is_active: true,
-  },
-  {
-    id: 2,
-    slide_number: 2,
-    display_order: 2,
-    title: "ARTISAN JACKFRUIT CURRY",
-    subtitle: "TROPICAL HARVEST",
-    description: "Authentic Flavor · Plant Based · 320g",
-    cta_text: "SHOP NOW",
-    cta_url: "/shop",
-    image_url: "/images/hero/hero_jackfruit_curry.png",
-    mobile_image_url: "/images/hero/hero_jackfruit_curry.png",
-    is_active: true,
-  },
-  {
-    id: 3,
-    slide_number: 3,
-    display_order: 3,
-    title: "ARTISAN READY-TO-COOK MEAL KIT",
-    subtitle: "JACRAL SELECTION",
-    description: "Jackfruit Curry & Rice with Spices",
-    cta_text: "SHOP NOW",
-    cta_url: "/shop",
-    image_url: "/images/hero/hero_jackfruit_cooking.png",
-    mobile_image_url: "/images/hero/hero_jackfruit_cooking.png",
-    is_active: true,
-  },
-];
+// No hardcoded default slides — only admin-uploaded slides will be shown.
 
 export default function HeroSlider({ slides = [] }: HeroSliderProps) {
-  const filtered = slides.filter((s) => s.is_active && s.image_url);
-  const activeSlides = filtered.length > 0 ? filtered : DEFAULT_HERO_SLIDES;
+  // Only show slides that are active AND have an admin-uploaded image
+  const activeSlides = slides.filter((s) => s.is_active && s.image_url);
   const total = activeSlides.length;
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -114,13 +74,13 @@ export default function HeroSlider({ slides = [] }: HeroSliderProps) {
 
   if (total === 0) {
     return (
-      <section className="relative w-full py-20 bg-[#FAF6EE] text-center">
-        <div className="max-w-md mx-auto p-8 rounded-3xl bg-white border border-[#E5DCDB] shadow-sm">
-          <h2 className="text-xl font-bold uppercase tracking-wider text-[#2C221E]">
-            JACRAL Whole Food Nutrition
-          </h2>
-          <p className="text-sm text-[#685B55] mt-2">
-            No published hero slides available. Check back soon!
+      <section className="relative w-full h-[400px] sm:h-[540px] md:h-[620px] bg-[#FAF6EE] flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <div className="w-20 h-20 mx-auto rounded-full bg-[#E5EEDB] flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#285B3C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="m3 9 4-4 4 4 4-4 4 4" /><path d="m3 15 4-4 4 4 4-4 4 4" /></svg>
+          </div>
+          <p className="text-sm font-bold uppercase tracking-wider text-[#285B3C]">
+            JACRAL – Upload hero slides from the Admin Panel
           </p>
         </div>
       </section>
@@ -130,7 +90,7 @@ export default function HeroSlider({ slides = [] }: HeroSliderProps) {
   return (
     <section
       ref={containerRef}
-      className="relative w-full h-[600px] sm:h-[640px] md:h-[680px] overflow-hidden select-none"
+      className="relative w-full h-[400px] sm:h-[540px] md:h-[620px] overflow-hidden select-none"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onTouchStart={handleTouchStart}

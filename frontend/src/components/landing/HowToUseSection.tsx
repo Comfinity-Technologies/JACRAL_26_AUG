@@ -27,8 +27,8 @@ const DEFAULT_STEPS: HowToUseStepData[] = [
   },
   {
     step_number: 2,
-    title: "ADD MILK OR PLANT MILK",
-    description: "Pour warm or chilled milk, almond milk, or oat milk over the cereal.",
+    title: "ADD MILK",
+    description: "Pour warm or chilled milk over the cereal.",
     image_url: "/images/steps/step2_add_milk.jpeg",
   },
   {
@@ -141,86 +141,86 @@ export default function HowToUseSection({ section }: HowToUseSectionProps) {
               const imgUrl = item.image_url ? getImageUrl(item.image_url) : (fallbackImg ? getImageUrl(fallbackImg) : null);
               const desc = item.description || item.desc || "";
 
-            return (
-              <div
-                key={item.id || idx}
-                className="bg-white/95 rounded-3xl p-7 border border-[#285B3C]/15 shadow-[0_8px_30px_rgba(40,91,60,0.06)] hover:shadow-[0_12px_40px_rgba(40,91,60,0.12)] hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
-              >
-                {/* Hover point indicator ── solid dot + ping ring */}
-                <span
-                  className="pointer-events-none absolute top-5 right-5 w-3 h-3 rounded-full bg-[#285B3C] opacity-0 scale-0 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300 z-20"
-                  aria-hidden="true"
-                />
-                <span
-                  className="pointer-events-none absolute top-5 right-5 w-3 h-3 rounded-full bg-[#285B3C] opacity-0 group-hover:opacity-60 group-hover:how-ping z-10"
-                  aria-hidden="true"
-                />
-                {/* Step Top Bar */}
-                <div className="flex items-center justify-between mb-5">
+              return (
+                <div
+                  key={item.id || idx}
+                  className="bg-white/95 rounded-3xl p-7 border border-[#285B3C]/15 shadow-[0_8px_30px_rgba(40,91,60,0.06)] hover:shadow-[0_12px_40px_rgba(40,91,60,0.12)] hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
+                >
+                  {/* Hover point indicator ── solid dot + ping ring */}
                   <span
-                    className="text-3xl sm:text-4xl font-black text-[#285B3C] tracking-tight"
-                    style={{ fontFamily: "Playfair Display, serif" }}
-                  >
-                    {formattedNum}
-                  </span>
-                  <div className="w-9 h-9 rounded-2xl bg-[#E5EEDB] text-[#285B3C] flex items-center justify-center font-bold text-xs group-hover:bg-[#285B3C] group-hover:text-white transition-all duration-300">
-                    {idx === 0 && <Utensils size={16} />}
-                    {idx === 1 && <Milk size={16} />}
-                    {idx === 2 && <Sparkles size={16} />}
-                    {idx === 3 && <HeartHandshake size={16} />}
-                  </div>
-                </div>
-
-                {/* Step Image */}
-                <div className="mb-5 rounded-2xl overflow-hidden h-40 bg-[#FAF6EE] border border-[#E5EEDB] flex items-center justify-center relative">
-                  {imgUrl ? (
-                    <img
-                      src={imgUrl}
-                      alt={item.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center text-[#285B3C]/40 p-4 text-center">
-                      <div className="w-12 h-12 rounded-full bg-[#E5EEDB]/70 flex items-center justify-center mb-2 text-[#285B3C] group-hover:bg-[#285B3C] group-hover:text-white transition-all duration-300">
-                        {idx === 0 && <Utensils size={22} />}
-                        {idx === 1 && <Milk size={22} />}
-                        {idx === 2 && <Sparkles size={22} />}
-                        {idx === 3 && <HeartHandshake size={22} />}
-                      </div>
-                      <span className="text-xs font-semibold uppercase tracking-wider text-[#4D7A52]">
-                        Step {stepNum} Guide
-                      </span>
+                    className="pointer-events-none absolute top-5 right-5 w-3 h-3 rounded-full bg-[#285B3C] opacity-0 scale-0 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300 z-20"
+                    aria-hidden="true"
+                  />
+                  <span
+                    className="pointer-events-none absolute top-5 right-5 w-3 h-3 rounded-full bg-[#285B3C] opacity-0 group-hover:opacity-60 group-hover:how-ping z-10"
+                    aria-hidden="true"
+                  />
+                  {/* Step Top Bar */}
+                  <div className="flex items-center justify-between mb-5">
+                    <span
+                      className="text-3xl sm:text-4xl font-black text-[#285B3C] tracking-tight"
+                      style={{ fontFamily: "Playfair Display, serif" }}
+                    >
+                      {formattedNum}
+                    </span>
+                    <div className="w-9 h-9 rounded-2xl bg-[#E5EEDB] text-[#285B3C] flex items-center justify-center font-bold text-xs group-hover:bg-[#285B3C] group-hover:text-white transition-all duration-300">
+                      {idx === 0 && <Utensils size={16} />}
+                      {idx === 1 && <Milk size={16} />}
+                      {idx === 2 && <Sparkles size={16} />}
+                      {idx === 3 && <HeartHandshake size={16} />}
                     </div>
-                  )}
-                </div>
+                  </div>
 
-                {/* Step Content */}
-                <div className="flex-1">
-                  <h3
-                    className="text-lg font-bold uppercase tracking-tight text-[#285B3C] mb-2"
-                    style={{ fontFamily: "Playfair Display, serif" }}
-                  >
-                    {item.title}
-                  </h3>
-                  <p className="text-sm text-[#4D7A52] leading-relaxed font-normal">
-                    {desc}
-                  </p>
-                </div>
+                  {/* Step Image */}
+                  <div className="mb-5 rounded-2xl overflow-hidden h-40 bg-[#FAF6EE] border border-[#E5EEDB] flex items-center justify-center relative">
+                    {imgUrl ? (
+                      <img
+                        src={imgUrl}
+                        alt={item.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center text-[#285B3C]/40 p-4 text-center">
+                        <div className="w-12 h-12 rounded-full bg-[#E5EEDB]/70 flex items-center justify-center mb-2 text-[#285B3C] group-hover:bg-[#285B3C] group-hover:text-white transition-all duration-300">
+                          {idx === 0 && <Utensils size={22} />}
+                          {idx === 1 && <Milk size={22} />}
+                          {idx === 2 && <Sparkles size={22} />}
+                          {idx === 3 && <HeartHandshake size={22} />}
+                        </div>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-[#4D7A52]">
+                          Step {stepNum} Guide
+                        </span>
+                      </div>
+                    )}
+                  </div>
 
-                {/* Bottom Step Indicator */}
-                <div className="mt-6 pt-4 border-t border-[#E5EEDB] flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-[#285B3C]/70">
-                  <span>Step {stepNum} of 4</span>
-                  <span className="text-[#285B3C] font-black">Enjoy Fresh</span>
-                </div>
+                  {/* Step Content */}
+                  <div className="flex-1">
+                    <h3
+                      className="text-lg font-bold uppercase tracking-tight text-[#285B3C] mb-2"
+                      style={{ fontFamily: "Playfair Display, serif" }}
+                    >
+                      {item.title}
+                    </h3>
+                    <p className="text-sm text-[#4D7A52] leading-relaxed font-normal">
+                      {desc}
+                    </p>
+                  </div>
 
-                {/* Left-edge accent bar that slides in on hover */}
-                <div className="absolute left-0 top-8 bottom-8 w-1 rounded-r-full bg-[#285B3C] scale-y-0 group-hover:scale-y-100 transition-transform duration-300 origin-center" />
-              </div>
-            );
-          })}
+                  {/* Bottom Step Indicator */}
+                  <div className="mt-6 pt-4 border-t border-[#E5EEDB] flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-[#285B3C]/70">
+                    <span>Step {stepNum} of 4</span>
+                    <span className="text-[#285B3C] font-black">Enjoy Fresh</span>
+                  </div>
+
+                  {/* Left-edge accent bar that slides in on hover */}
+                  <div className="absolute left-0 top-8 bottom-8 w-1 rounded-r-full bg-[#285B3C] scale-y-0 group-hover:scale-y-100 transition-transform duration-300 origin-center" />
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
 }

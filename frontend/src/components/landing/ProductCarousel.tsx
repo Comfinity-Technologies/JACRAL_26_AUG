@@ -55,7 +55,7 @@ export default function ProductCarousel({ products }: ProductCarouselProps) {
           <button
             onClick={() => scroll("left")}
             aria-label="Previous product"
-            className="w-11 h-11 rounded-full border-2 border-[#2C221E]/15 bg-white text-[#2C221E] hover:bg-[#3B6E4C] hover:text-white hover:border-[#3B6E4C] transition-all duration-300 shadow-sm hover:shadow-md flex items-center justify-center active:scale-95 cursor-pointer"
+            className="w-9 h-9 rounded-full border-2 border-[#2C221E]/15 bg-white text-[#2C221E] hover:bg-[#3B6E4C] hover:text-white hover:border-[#3B6E4C] transition-all duration-300 shadow-sm hover:shadow-md flex items-center justify-center active:scale-95 cursor-pointer"
           >
             <ChevronLeft size={22} strokeWidth={2.5} />
           </button>
@@ -72,7 +72,7 @@ export default function ProductCarousel({ products }: ProductCarouselProps) {
       {/* ── CAROUSEL TRACK (LARGER CARD SIZE) ── */}
       <div
         ref={scrollRef}
-        className="flex gap-6 sm:gap-7 lg:gap-8 overflow-x-auto pb-4 pt-1 px-1 scroll-smooth snap-x snap-mandatory no-scrollbar"
+        className="flex gap-6 sm:gap-7 lg:gap-5 overflow-x-auto pb-4 pt-1 px-1 scroll-smooth snap-x snap-mandatory no-scrollbar"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         {products.map((product) => (
@@ -94,11 +94,10 @@ export default function ProductCarousel({ products }: ProductCarouselProps) {
               type="button"
               onClick={() => scrollToIndex(idx)}
               aria-label={`Go to product slide ${idx + 1}`}
-              className={`transition-all duration-300 rounded-full cursor-pointer ${
-                idx === activeIndex
-                  ? "w-8 h-2 bg-[#3B6E4C]"
-                  : "w-2 h-2 bg-[#D4C8C6] hover:bg-[#A8988E]"
-              }`}
+              className={`transition-all duration-300 rounded-full cursor-pointer ${idx === activeIndex
+                ? "w-5 h-2 bg-[#3B6E4C]"
+                : "w-2 h-2 bg-[#D4C8C6] hover:bg-[#A8988E]"
+                }`}
             />
           ))}
         </div>

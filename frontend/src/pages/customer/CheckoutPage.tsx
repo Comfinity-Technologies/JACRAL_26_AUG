@@ -1,14 +1,19 @@
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "../../hooks/useCart";
 import { useAuth } from "../../hooks/useAuth";
 import { apiClient } from "../../api/client";
-import { MapPin, User, Mail, Phone, ShoppingBag, Lock, Loader2 } from "lucide-react";
+import { MapPin, User, Mail, Phone, ShoppingBag, Lock, Loader2, Tag } from "lucide-react";
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { items, subtotal, delivery, total, clearCart } = useCart();
   const { user, isAuthenticated } = useAuth();
+
+  // Coupon applied on CartPage — passed via router state
+  const couponCode: string | undefined = location.state?.coupon;
+  const couponDiscount: number = location.state?.discount || 0;
 
   const [name, setName] = useState(user?.name || "");
   const [email, setEmail] = useState(user?.email || "");
@@ -79,7 +84,7 @@ export default function CheckoutPage() {
 
     setSubmitting(true);
     try {
-      const orderData = {
+      const orderData: Record<string, unknown> = {
         items: items.map((item) => ({
           product_id: item.product_id,
           quantity: item.quantity,
@@ -90,6 +95,10 @@ export default function CheckoutPage() {
         shipping_address: `${address}, ${city}, ${state} - ${pincode}`,
         notes: "Placed via JACRAL Web",
       };
+
+      if (couponCode) {
+        orderData.coupon_code = couponCode;
+      }
 
       const res = await apiClient.post("/api/v1/orders", orderData);
       localStorage.setItem("jacral_last_order", JSON.stringify(res.data));
@@ -282,9 +291,15 @@ export default function CheckoutPage() {
                   {delivery === 0 ? "FREE" : `₹${delivery}`}
                 </span>
               </div>
+              {couponDiscount > 0 && (
+                <div className="flex justify-between text-sm text-[#7BC89A] font-semibold">
+                  <span className="flex items-center gap-1"><Tag size={12} /> Coupon ({couponCode})</span>
+                  <span>- ₹{couponDiscount}</span>
+                </div>
+              )}
               <div className="flex justify-between pt-4 border-t border-white/12 text-lg font-bold">
                 <span>Total</span>
-                <span>₹{total}</span>
+                <span>₹{Math.max(0, total - couponDiscount)}</span>
               </div>
             </div>
 

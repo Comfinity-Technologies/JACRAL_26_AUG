@@ -21,8 +21,8 @@ export default function HeroSlide({
   return (
     <div
       className={`absolute inset-0 w-full h-full transition-opacity duration-700 ease-in-out ${isActive
-          ? "opacity-100 z-10 pointer-events-auto"
-          : "opacity-0 z-0 pointer-events-none"
+        ? "opacity-100 z-10 pointer-events-auto"
+        : "opacity-0 z-0 pointer-events-none"
         }`}
       aria-hidden={!isActive}
     >

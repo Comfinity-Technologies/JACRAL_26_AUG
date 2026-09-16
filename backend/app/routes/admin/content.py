@@ -168,30 +168,32 @@ def update_brand(
     if data.brand_name is not None:
         setting = db.query(WebsiteSetting).filter(WebsiteSetting.key == "brand_name").first()
         if not setting:
-            setting = WebsiteSetting(key="brand_name", draft_value=data.brand_name, is_published=False)
+            setting = WebsiteSetting(key="brand_name", value=data.brand_name, draft_value=data.brand_name, is_published=True)
             db.add(setting)
         else:
+            setting.value = data.brand_name
             setting.draft_value = data.brand_name
-            setting.is_published = False
+            setting.is_published = True
             setting.updated_by = admin.id
 
     if data.tagline is not None:
         setting = db.query(WebsiteSetting).filter(WebsiteSetting.key == "tagline").first()
         if not setting:
-            setting = WebsiteSetting(key="tagline", draft_value=data.tagline, is_published=False)
+            setting = WebsiteSetting(key="tagline", value=data.tagline, draft_value=data.tagline, is_published=True)
             db.add(setting)
         else:
+            setting.value = data.tagline
             setting.draft_value = data.tagline
-            setting.is_published = False
+            setting.is_published = True
             setting.updated_by = admin.id
 
     db.commit()
     audit_service.log_action(db, "BRAND_DRAFT_UPDATED", admin.id, "website_setting", "brand")
     db.commit()
-    return {"success": True, "message": "Brand settings saved as draft."}
+    return {"success": True, "message": "Brand settings saved."}
 
 
-@router.post("/brand/logo", summary="Upload brand logo (draft)")
+@router.post("/brand/logo", summary="Upload brand logo")
 async def upload_brand_logo(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
@@ -213,20 +215,21 @@ async def upload_brand_logo(
     )
     db.add(media)
 
-    # Save to website_settings as draft
+    # Save to website_settings
     setting = db.query(WebsiteSetting).filter(WebsiteSetting.key == "logo_url").first()
     if not setting:
         setting = WebsiteSetting(
             key="logo_url",
-            value=None,
+            value=rel_url,
             draft_value=rel_url,
-            is_published=False,
+            is_published=True,
             updated_by=admin.id,
         )
         db.add(setting)
     else:
+        setting.value = rel_url
         setting.draft_value = rel_url
-        setting.is_published = False
+        setting.is_published = True
         setting.updated_by = admin.id
 
     db.commit()
@@ -235,8 +238,9 @@ async def upload_brand_logo(
 
     return {
         "success": True,
-        "message": "Logo uploaded successfully as draft. Click Publish to make it live.",
+        "message": "Logo uploaded successfully!",
         "draft_logo_url": rel_url,
+        "logo_url": rel_url,
     }
 
 
@@ -338,6 +342,14 @@ def update_slide(
     update_dict = data.model_dump(exclude_unset=True)
     for field, val in update_dict.items():
         setattr(slide, field, val)
+        if field == "draft_title": slide.title = val
+        elif field == "draft_subtitle": slide.subtitle = val
+        elif field == "draft_description": slide.description = val
+        elif field == "draft_cta_text": slide.cta_text = val
+        elif field == "draft_cta_url": slide.cta_url = val
+        elif field == "draft_is_active": slide.is_active = val
+        elif field == "draft_image_url": slide.image_url = val
+        elif field == "draft_mobile_image_url": slide.mobile_image_url = val
 
     slide.updated_by = admin.id
     db.commit()
@@ -364,7 +376,7 @@ def delete_slide(
     return {"success": True, "message": "Slide deleted successfully"}
 
 
-@router.post("/landing-page/slides/{slide_id}/image", summary="Upload hero slide image (draft)")
+@router.post("/landing-page/slides/{slide_id}/image", summary="Upload hero slide image")
 async def upload_slide_image(
     slide_id: int,
     target: str = Form(default="desktop"),  # "desktop" or "mobile"
@@ -393,9 +405,13 @@ async def upload_slide_image(
 
     if target == "mobile":
         slide.draft_mobile_image_url = rel_url
+        slide.mobile_image_url = rel_url
     else:
         slide.draft_image_url = rel_url
+        slide.image_url = rel_url
 
+    slide.is_active = True
+    slide.draft_is_active = True
     slide.updated_by = admin.id
     db.commit()
     db.refresh(slide)
@@ -412,7 +428,7 @@ async def upload_slide_image(
 
     return {
         "success": True,
-        "message": f"Slide {target} image uploaded as draft. Click Publish to make live.",
+        "message": f"Slide {target} image uploaded successfully.",
         "image_url": rel_url,
         "slide": HeroSlideAdminOut.model_validate(slide),
     }
@@ -801,3 +817,75 @@ async def admin_upload_step_image_by_id(
     return step
 
 
+# -------------------------------------------------------------
+# Natural Goodness Section Image Upload
+# -------------------------------------------------------------
+NATURAL_GOODNESS_DIR = UPLOAD_ROOT / "natural_goodness"
+NATURAL_GOODNESS_DIR.mkdir(parents=True, exist_ok=True)
+
+
+@router.post(
+    "/natural-goodness/image",
+    summary="Upload the Natural Goodness section product image",
+)
+async def upload_natural_goodness_image(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+):
+    """
+    Upload the product image shown in the Natural Goodness section of the landing page.
+    The URL is stored under the 'natural_goodness_image_url' website setting.
+    """
+    filename, rel_url, file_size = await _save_upload_file(
+        file, NATURAL_GOODNESS_DIR, "natural_goodness"
+    )
+
+    is_remote = rel_url.startswith("http")
+    media = MediaAsset(
+        filename=filename,
+        original_name=file.filename or "natural_goodness",
+        file_path=rel_url if is_remote else str(NATURAL_GOODNESS_DIR / filename),
+        file_url=rel_url,
+        mime_type=file.content_type or "image/jpeg",
+        file_size=file_size,
+        asset_type="natural_goodness",
+        uploader_id=admin.id,
+    )
+    db.add(media)
+
+    # Save to website_settings
+    setting = db.query(WebsiteSetting).filter(
+        WebsiteSetting.key == "natural_goodness_image_url"
+    ).first()
+    if not setting:
+        setting = WebsiteSetting(
+            key="natural_goodness_image_url",
+            value=rel_url,
+            draft_value=rel_url,
+            is_published=True,
+            updated_by=admin.id,
+        )
+        db.add(setting)
+    else:
+        setting.value = rel_url
+        setting.draft_value = rel_url
+        setting.is_published = True
+        setting.updated_by = admin.id
+
+    db.commit()
+    audit_service.log_action(
+        db,
+        "NATURAL_GOODNESS_IMAGE_UPLOADED",
+        admin.id,
+        "website_setting",
+        "natural_goodness_image_url",
+        {"url": rel_url},
+    )
+    db.commit()
+
+    return {
+        "success": True,
+        "message": "Natural Goodness image uploaded successfully!",
+        "image_url": rel_url,
+    }

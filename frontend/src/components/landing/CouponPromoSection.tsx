@@ -19,13 +19,13 @@ export default function CouponPromoSection() {
         <img
           src="/images/tropical_leaf.png"
           alt=""
-          className="absolute left-[12%] top-1 w-8 h-8 opacity-20 rotate-[-25deg] invert"
+          className="absolute left-[12%] top-1 w-5 h-2 opacity-20 rotate-[-25deg] invert"
         />
         {/* Right leaf */}
         <img
           src="/images/tropical_leaf.png"
           alt=""
-          className="absolute right-[14%] bottom-1 w-7 h-7 opacity-20 rotate-[35deg] invert"
+          className="absolute right-[14%] bottom-1 w-5 h-5 opacity-20 rotate-[35deg] invert"
         />
       </div>
 
@@ -33,7 +33,7 @@ export default function CouponPromoSection() {
         type="button"
         onClick={handleCopy}
         aria-label="Copy coupon code JACRAL10 for 10% off"
-        className="group relative w-full flex items-center justify-center gap-3 sm:gap-6 px-4 py-4 sm:py-5 hover:bg-[#C92919] active:bg-[#B32315] transition-all duration-200 cursor-pointer"
+        className="group relative w-full flex items-center justify-center gap-3 sm:gap-6 px-4 py-2 sm:py-2.5 hover:bg-[#C92919] active:bg-[#B32315] transition-all duration-200 cursor-pointer"
       >
         {/* Left: Percent Icon Badge */}
         <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white/20 text-white font-bold text-sm flex-shrink-0">

@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: var(--font-body);
+}
 /* =========================================================
    JACRAL — CUSTOM FONT DECLARATIONS
    ---------------------------------------------------------

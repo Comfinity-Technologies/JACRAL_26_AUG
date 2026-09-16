@@ -14,6 +14,7 @@ class BrandPublicOut(BaseModel):
     tagline: Optional[str] = "Pure Jackfruit Goodness"
     logo_url: Optional[str] = None
     favicon_url: Optional[str] = None
+    natural_goodness_image_url: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 

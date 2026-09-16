@@ -290,8 +290,8 @@ def seed_cms_content():
                         },
                         {
                             "step": "02",
-                            "title": "Add Milk or Plant Milk",
-                            "desc": "Pour warm or chilled milk, almond milk, or oat milk over the cereal.",
+                            "title": "Add Milk",
+                            "desc": "Pour warm or chilled milk over the cereal.",
                             "image_url": None
                         },
                         {

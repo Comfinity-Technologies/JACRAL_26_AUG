@@ -85,21 +85,21 @@ export default function ReviewsSection() {
         {/* ── Hanging Reviews Layout ── */}
         <div className="relative max-w-6xl mx-auto">
           {/* Ribbon SVG */}
-          <div className="absolute top-12 sm:top-24 left-0 right-0 h-48 pointer-events-none hidden md:block">
+          <div className="absolute top-0 sm:top-0 left-20 right-20 h-30 pointer-events-none hidden md:block">
             <svg width="100%" height="100%" viewBox="0 0 1200 200" preserveAspectRatio="none" fill="none">
               <path
                 d="M-100,50 C200,150 400,-20 600,80 C800,180 1000,20 1300,100"
-                stroke="#1A4C2E"
+                stroke="#0e7e3bff"
                 strokeWidth="28"
                 strokeLinecap="round"
               />
             </svg>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-6 relative z-10 mt-8 md:mt-0 px-4 md:px-0">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-24 md:gap-6 relative z-10 mt-8 md:mt-0 px-4 md:px-0">
             {items.slice(0, 3).map((item, idx) => {
               // Create staggered "hanging" effect based on index
-              const marginTop = idx === 0 ? "md:mt-32" : idx === 1 ? "md:mt-48" : "md:mt-64";
+              const marginTop = idx === 0 ? "md:mt-13" : idx === 1 ? "md:mt-13" : "md:mt-13";
               const rotate = idx === 0 ? "rotate-[-3deg]" : idx === 1 ? "rotate-[2deg]" : "rotate-[-1deg]";
 
               return (

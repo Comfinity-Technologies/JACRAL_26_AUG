@@ -142,7 +142,8 @@ export default function LandingNavbar({
   const brandName =
     brand?.brand_name || "JACRAL";
 
-  const logoUrl = brand?.logo_url || "/images/brand/jacral_navbar_logo.png";
+  // Only use admin-uploaded logo; no hardcoded fallback image
+  const logoUrl = brand?.logo_url || null;
 
   const tagline =
     brand?.tagline ||
@@ -164,19 +165,19 @@ export default function LandingNavbar({
 
   return (
     <header
-      className={`sticky top-0 z-50 w-full bg-white transition-all duration-300 ${scrolled
-          ? "shadow-md"
-          : "border-b border-[#E5DCDB]/70"
+      className={`sticky top-0 z-25 w-full bg-white transition-all duration-300 ${scrolled
+        ? "shadow-md"
+        : "border-b border-[#E5DCDB]/70"
         }`}
     >
       {/* =====================================================
           MAIN NAVBAR
           ===================================================== */}
-      <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
+      <div className="max-w-[14400px] mx-auto px-5 sm:px-5 lg:px-12">
         <div
           className={`flex items-center justify-between gap-6 transition-all duration-300 ${scrolled
-              ? "min-h-[70px]"
-              : "min-h-[92px]"
+            ? "min-h-[50px]"
+            : "min-h-[50px]"
             }`}
         >
 
@@ -199,9 +200,9 @@ export default function LandingNavbar({
                 src={getImageUrl(logoUrl)}
                 alt={brandName}
                 className={`w-auto object-contain transition-all duration-300 ${scrolled
-                    ? "h-9 sm:h-10"
-                    : "h-11 sm:h-12"
-                  } max-w-[180px]`}
+                  ? "h-9 sm:h-10"
+                  : "h-5 sm:h-12"
+                  } max-w-[200px]`}
               />
             ) : (
               <div className="flex items-center gap-2.5">
@@ -233,12 +234,16 @@ export default function LandingNavbar({
               RIGHT SIDE
               HOME / SHOP / SEARCH / LOGIN / CART
               ================================================= */}
-          <div className="flex items-center">
+          <div className="flex items-center flex-1 justify-end gap-2">
 
             {/* -----------------------------------------------
-                DESKTOP NAVIGATION
+                DESKTOP NAVIGATION (hidden when search open)
                 ----------------------------------------------- */}
-            <nav className="hidden md:flex items-center gap-8 mr-8">
+            <nav
+              className={`hidden md:flex items-center gap-8 mr-4 transition-all duration-200 ${
+                searchOpen ? "opacity-0 pointer-events-none w-0 mr-0 overflow-hidden" : "opacity-100"
+              }`}
+            >
 
               <NavLink
                 to="/"
@@ -268,7 +273,37 @@ export default function LandingNavbar({
             </nav>
 
             {/* -----------------------------------------------
-                SEARCH
+                INLINE SEARCH BAR (expands in same row)
+                ----------------------------------------------- */}
+            <form
+              onSubmit={handleSearchSubmit}
+              className={`hidden md:flex items-center gap-2 rounded-full border transition-all duration-300 overflow-hidden ${
+                searchOpen
+                  ? "flex-1 max-w-md px-4 py-2 border-[#E88D36] bg-[#FAF6EE]"
+                  : "w-0 border-transparent pointer-events-none opacity-0"
+              }`}
+            >
+              <Search size={16} className="text-[#E88D36] flex-shrink-0" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Search products..."
+                className="flex-1 bg-transparent outline-none text-sm text-[#2C221E] placeholder:text-[#685B55]/50 min-w-0"
+              />
+              <button
+                type="button"
+                onClick={() => { setSearchOpen(false); setSearchQuery(""); }}
+                className="text-[#A8988E] hover:text-[#2C221E] transition flex-shrink-0"
+                aria-label="Close search"
+              >
+                <X size={14} />
+              </button>
+            </form>
+
+            {/* -----------------------------------------------
+                SEARCH TOGGLE BUTTON
                 ----------------------------------------------- */}
             <button
               type="button"
@@ -330,8 +365,8 @@ export default function LandingNavbar({
                   <ChevronDown
                     size={13}
                     className={`transition-transform ${accountMenuOpen
-                        ? "rotate-180"
-                        : ""
+                      ? "rotate-180"
+                      : ""
                       }`}
                   />
                 </button>
@@ -448,42 +483,6 @@ export default function LandingNavbar({
         </div>
       </div>
 
-      {/* =====================================================
-          SEARCH PANEL
-          ===================================================== */}
-      {searchOpen && (
-        <div className="border-t border-[#E5DCDB] bg-white px-5 py-4 shadow-sm">
-          <form
-            onSubmit={handleSearchSubmit}
-            className="max-w-2xl mx-auto flex items-center gap-3"
-          >
-            <Search
-              size={18}
-              className="text-[#E88D36]"
-            />
-
-            <input
-              ref={searchInputRef}
-              type="text"
-              value={searchQuery}
-              onChange={(event) =>
-                setSearchQuery(
-                  event.target.value
-                )
-              }
-              placeholder="Search products..."
-              className="flex-1 bg-transparent outline-none text-sm text-[#2C221E] placeholder:text-[#685B55]/50"
-            />
-
-            <button
-              type="submit"
-              className="px-5 py-2 rounded-full bg-[#E88D36] text-white text-[11px] font-bold uppercase tracking-wider hover:bg-[#D47E2A] transition-colors"
-            >
-              Search
-            </button>
-          </form>
-        </div>
-      )}
 
       {/* =====================================================
           MOBILE MENU

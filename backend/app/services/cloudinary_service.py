@@ -78,8 +78,10 @@ def upload_image_to_storage(
             logger.error(f"Cloudinary upload error: {e}. Falling back to local storage.")
 
     # 2. Fallback to local static storage
+    static_base = Path(__file__).resolve().parents[2] / "static"
     if local_fallback_dir is None:
-        local_fallback_dir = Path(__file__).resolve().parents[2] / "static" / folder
+        local_fallback_dir = static_base / folder
+    
     local_fallback_dir.mkdir(parents=True, exist_ok=True)
 
     unique_filename = f"{uuid.uuid4().hex[:10]}.{ext}"
@@ -87,4 +89,8 @@ def upload_image_to_storage(
     with open(dest, "wb") as f:
         f.write(file_bytes)
 
-    return f"/static/{folder}/{unique_filename}"
+    try:
+        rel_path = local_fallback_dir.relative_to(static_base)
+        return f"/static/{rel_path.as_posix()}/{unique_filename}"
+    except ValueError:
+        return f"/static/{folder}/{unique_filename}"

@@ -146,7 +146,7 @@ export default function RegisterPage() {
           <button
             disabled={loading}
             type="submit"
-            className="mt-7 w-full flex items-center justify-center gap-2 rounded-full bg-[#3B6E4C] px-6 py-4 font-bold text-white transition hover:bg-[#2E583C] hover:shadow-lg hover:shadow-[#3B6E4C]/25 hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:transform-none disabled:hover:shadow-none"
+            className="mt-7 w-full btn-primary justify-center disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:transform-none disabled:hover:shadow-none"
           >
             {loading ? (
               <><Loader2 size={18} className="animate-spin" /> Creating Account…</>

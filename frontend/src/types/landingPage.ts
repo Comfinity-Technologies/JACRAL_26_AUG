@@ -7,6 +7,7 @@ export interface BrandInfo {
   tagline?: string;
   logo_url?: string | null;
   favicon_url?: string | null;
+  natural_goodness_image_url?: string | null;
 }
 
 export interface BrandAdminInfo extends BrandInfo {

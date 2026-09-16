@@ -91,7 +91,7 @@ export default function LoginPage() {
             <span className="text-white font-black text-xl tracking-wider">JACRAL</span>
           </div>
 
-          <h2 className="text-white text-4xl xl:text-5xl font-black leading-tight mb-6" style={{ fontFamily: "var(--font-display)" }}>
+          <h2 className="text-white text-4xl xl:text-5xl font-black leading-tight mb-8" style={{ fontFamily: "var(--font-display)" }}>
             Welcome Back to<br />Natural Living
           </h2>
           <p className="text-white/60 text-base leading-relaxed max-w-sm">
@@ -119,7 +119,7 @@ export default function LoginPage() {
       {/* Right Panel – Form */}
       <div className="flex-1 flex items-center justify-center px-6 py-16 lg:py-0">
         <div className="w-full max-w-md">
-          
+
           {/* Mobile Logo */}
           <div className="flex lg:hidden items-center gap-2 justify-center mb-8">
             <div className="w-9 h-9 rounded-full bg-[#3B6E4C] flex items-center justify-center">
@@ -128,18 +128,23 @@ export default function LoginPage() {
             <span className="text-[#2C221E] font-black text-lg tracking-wider">JACRAL</span>
           </div>
 
-          <div className="anim-fade-up">
-            <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#E88D36] mb-2">Welcome Back</p>
-            <h1 className="text-4xl sm:text-5xl text-[#2C221E] mb-2" style={{ fontFamily: "var(--font-display)" }}>
+          <div className="anim-fade-up mb-10 sm:mb-14">
+            <p className="text-sm font-bold uppercase tracking-[0.25em] text-[#E88D36] mb-4">
+              Welcome Back
+            </p>
+            <h1
+              className="text-5xl sm:text-6xl text-[#2C221E] mb-6 leading-tight"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
               Sign In
             </h1>
-            <p className="text-[#685B55] text-sm mb-8">
+            <p className="text-[#685B55] text-base leading-relaxed">
               Access your account, orders, and checkout.
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="anim-fade-up space-y-5" style={{ animationDelay: "0.1s" }}>
-            
+
             {/* Email */}
             <div>
               <label className="block text-sm font-semibold text-[#2C221E] mb-1.5">
@@ -193,7 +198,7 @@ export default function LoginPage() {
             <button
               disabled={loading}
               type="submit"
-              className="w-full rounded-full bg-[#3B6E4C] px-6 py-4 font-bold text-white transition hover:bg-[#2E583C] hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60 flex items-center justify-center gap-2 text-sm"
+              className="w-full btn-primary justify-center disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? (
                 <span className="flex items-center gap-2">

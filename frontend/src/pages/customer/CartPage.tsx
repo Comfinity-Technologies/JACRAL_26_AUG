@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
   Minus,
   Plus,
@@ -8,11 +9,26 @@ import {
   Truck,
   Shield,
   RotateCcw,
+  Check,
+  Copy,
+  X,
+  Loader2,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 import { Link } from "react-router-dom";
 import { useCart } from "../../hooks/useCart";
 import { getImageUrl } from "../../utils/image";
+import { apiClient } from "../../api/client";
+
+interface AvailableCoupon {
+  code: string;
+  description?: string;
+  discount_type: string;
+  discount_value: number;
+  min_order_amount?: number;
+}
 
 export default function CartPage() {
   const {
@@ -25,6 +41,73 @@ export default function CartPage() {
     removeFromCart,
   } = useCart();
 
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount: number } | null>(null);
+  const [couponError, setCouponError] = useState("");
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [availableCoupons, setAvailableCoupons] = useState<AvailableCoupon[]>([]);
+  const [showCoupons, setShowCoupons] = useState(false);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+
+  // Load available coupons from backend
+  useEffect(() => {
+    const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
+    fetch(`${baseUrl}/api/v1/content/coupons`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) setAvailableCoupons(data);
+      })
+      .catch(() => {
+        // fallback: show a known default coupon
+        setAvailableCoupons([
+          {
+            code: "JACRAL10",
+            description: "10% off on your first order",
+            discount_type: "percentage",
+            discount_value: 10,
+          },
+        ]);
+      });
+  }, []);
+
+  const handleApplyCoupon = async () => {
+    const code = couponCode.trim().toUpperCase();
+    if (!code) return;
+    setCouponError("");
+    setCouponLoading(true);
+    try {
+      const res = await apiClient.post("/api/v1/coupons/validate", {
+        code,
+        order_amount: subtotal,
+      });
+      const { valid, discount_amount, message } = res.data;
+      if (valid) {
+        setAppliedCoupon({ code, discount: discount_amount });
+        setCouponCode("");
+      } else {
+        setCouponError(message || "Invalid coupon code.");
+      }
+    } catch {
+      setCouponError("Could not validate coupon. Please try again.");
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponError("");
+  };
+
+  const handleCopyCode = (code: string) => {
+    navigator.clipboard.writeText(code).catch(() => {});
+    setCouponCode(code);
+    setCopiedCode(code);
+    setTimeout(() => setCopiedCode(null), 2000);
+  };
+
+  const finalTotal = total - (appliedCoupon?.discount || 0);
+
   if (items.length === 0) {
     return (
       <div className="min-h-screen bg-[#FAF6EE] flex flex-col items-center justify-center px-6 py-20">
@@ -36,7 +119,6 @@ export default function CartPage() {
           .float-anim { animation: float-bag 3s ease-in-out infinite; }
         `}</style>
 
-        {/* Floating bag */}
         <div className="float-anim mb-8">
           <div className="w-28 h-28 rounded-full bg-[#E88D36]/10 flex items-center justify-center">
             <ShoppingBag size={52} strokeWidth={1.3} className="text-[#E88D36]" />
@@ -58,7 +140,6 @@ export default function CartPage() {
           Browse Products <ArrowRight size={18} />
         </Link>
 
-        {/* Trust Badges */}
         <div className="mt-16 flex flex-wrap justify-center gap-8 text-[#685B55] text-xs font-semibold">
           <div className="flex items-center gap-2"><Truck size={16} className="text-[#3B6E4C]" /> Free Delivery on ₹499+</div>
           <div className="flex items-center gap-2"><Shield size={16} className="text-[#3B6E4C]" /> Secure Checkout</div>
@@ -89,7 +170,7 @@ export default function CartPage() {
           <p className="mt-1 text-[#685B55] text-sm">{items.length} item{items.length !== 1 ? "s" : ""} in your cart</p>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
+        <div className="grid gap-6 lg:grid-cols-[1fr_400px]">
 
           {/* ITEMS LIST */}
           <div className="space-y-4">
@@ -99,7 +180,6 @@ export default function CartPage() {
                 className="cart-item-enter bg-white rounded-2xl sm:rounded-3xl border border-[#E5DCDB] p-5 sm:p-6 flex gap-4 sm:gap-6 shadow-sm hover:shadow-md transition-shadow"
                 style={{ animationDelay: `${idx * 80}ms` }}
               >
-                {/* Image */}
                 <div className="h-24 w-24 sm:h-28 sm:w-28 flex-shrink-0 rounded-2xl bg-gradient-to-br from-[#F2EBDC] to-[#E9E1D0] flex items-center justify-center overflow-hidden">
                   {item.image ? (
                     <img
@@ -112,14 +192,12 @@ export default function CartPage() {
                   )}
                 </div>
 
-                {/* Info */}
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-[#E88D36] mb-0.5">{item.category}</p>
                   <h3 className="text-base sm:text-lg font-bold text-[#2C221E] leading-tight truncate pr-2">{item.name}</h3>
                   <p className="mt-1 text-sm font-semibold text-[#3B6E4C]">₹{item.unit_price} each</p>
 
                   <div className="mt-4 flex items-center justify-between flex-wrap gap-3">
-                    {/* Qty Control */}
                     <div className="flex items-center rounded-full border border-[#DCD7CB] bg-[#FAF6EE] overflow-hidden">
                       <button
                         type="button"
@@ -165,7 +243,120 @@ export default function CartPage() {
           </div>
 
           {/* ORDER SUMMARY */}
-          <aside className="h-fit">
+          <aside className="h-fit space-y-4">
+
+            {/* ── AVAILABLE COUPONS (Amazon/Flipkart style) ── */}
+            {availableCoupons.length > 0 && (
+              <div className="rounded-2xl border border-[#E5DCDB] bg-white overflow-hidden shadow-sm">
+                <button
+                  type="button"
+                  onClick={() => setShowCoupons((p) => !p)}
+                  className="w-full flex items-center justify-between px-5 py-4 hover:bg-[#FAF6EE] transition"
+                >
+                  <div className="flex items-center gap-2 text-sm font-bold text-[#2C221E]">
+                    <Tag size={16} className="text-[#E88D36]" />
+                    {availableCoupons.length} Coupon{availableCoupons.length > 1 ? "s" : ""} Available
+                  </div>
+                  {showCoupons ? (
+                    <ChevronUp size={16} className="text-[#685B55]" />
+                  ) : (
+                    <ChevronDown size={16} className="text-[#685B55]" />
+                  )}
+                </button>
+
+                {showCoupons && (
+                  <div className="border-t border-[#F2EBDC] divide-y divide-[#F2EBDC]">
+                    {availableCoupons.map((c) => (
+                      <div key={c.code} className="px-5 py-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-black text-sm text-[#2C221E] tracking-wider border border-dashed border-[#E88D36] px-2 py-0.5 rounded text-[#E88D36]">
+                                {c.code}
+                              </span>
+                              <span className="text-[10px] font-bold text-white bg-[#3B6E4C] px-2 py-0.5 rounded-full">
+                                {c.discount_type === "percentage"
+                                  ? `${c.discount_value}% OFF`
+                                  : `₹${c.discount_value} OFF`}
+                              </span>
+                            </div>
+                            <p className="text-xs text-[#685B55]">
+                              {c.description || `Get ${c.discount_type === "percentage" ? `${c.discount_value}%` : `₹${c.discount_value}`} off your order`}
+                            </p>
+                            {c.min_order_amount && (
+                              <p className="text-[10px] text-[#A8988E] mt-0.5">Min. order ₹{c.min_order_amount}</p>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleCopyCode(c.code)}
+                            className="flex items-center gap-1.5 text-xs font-bold text-[#E88D36] hover:text-[#D47E2A] transition flex-shrink-0 border border-[#E88D36]/30 rounded-lg px-2.5 py-1.5"
+                          >
+                            {copiedCode === c.code ? (
+                              <><Check size={12} /> Applied</>
+                            ) : (
+                              <><Copy size={12} /> Apply</>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── COUPON INPUT ── */}
+            <div className="rounded-2xl border border-[#E5DCDB] bg-white p-5 shadow-sm">
+              <p className="text-sm font-bold text-[#2C221E] mb-3 flex items-center gap-2">
+                <Tag size={15} className="text-[#E88D36]" /> Apply Coupon Code
+              </p>
+
+              {appliedCoupon ? (
+                <div className="flex items-center justify-between bg-[#EDF7F1] border border-[#3B6E4C]/30 rounded-xl px-4 py-3">
+                  <div>
+                    <p className="text-xs font-bold text-[#3B6E4C] flex items-center gap-1.5">
+                      <Check size={13} /> Coupon Applied: <span className="tracking-wider">{appliedCoupon.code}</span>
+                    </p>
+                    <p className="text-xs text-[#3B6E4C]/70 mt-0.5">You save ₹{appliedCoupon.discount}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveCoupon}
+                    className="text-red-500 hover:text-red-700 transition ml-3"
+                    aria-label="Remove coupon"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={couponCode}
+                    onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setCouponError(""); }}
+                    placeholder="Enter coupon code"
+                    className="flex-1 rounded-xl border border-[#E5DCDB] bg-[#FAF6EE] px-3 py-2.5 text-sm text-[#2C221E] outline-none focus:border-[#E88D36] focus:ring-2 focus:ring-[#E88D36]/10 transition placeholder-[#A8988E] font-mono"
+                    onKeyDown={(e) => e.key === "Enter" && handleApplyCoupon()}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleApplyCoupon}
+                    disabled={couponLoading || !couponCode.trim()}
+                    className="rounded-xl bg-[#2C221E] text-white px-4 py-2.5 text-sm font-bold hover:bg-[#3B6E4C] transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                  >
+                    {couponLoading ? <Loader2 size={14} className="animate-spin" /> : null}
+                    Apply
+                  </button>
+                </div>
+              )}
+
+              {couponError && (
+                <p className="mt-2 text-xs text-red-600 font-medium">{couponError}</p>
+              )}
+            </div>
+
+            {/* ── ORDER SUMMARY ── */}
             <div className="rounded-3xl bg-[#2C221E] p-7 text-white shadow-2xl">
               <h2 className="text-xl font-bold mb-6">Order Summary</h2>
 
@@ -189,27 +380,27 @@ export default function CartPage() {
                     {delivery === 0 ? "FREE ✓" : `₹${delivery}`}
                   </span>
                 </div>
+                {appliedCoupon && (
+                  <div className="flex justify-between text-sm text-[#7BC89A] font-semibold">
+                    <span>Coupon ({appliedCoupon.code})</span>
+                    <span>- ₹{appliedCoupon.discount}</span>
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-between items-center py-5 border-t border-white/15 mt-4">
                 <span className="text-lg font-semibold">Total</span>
-                <span className="text-2xl font-bold text-[#FFB800]">₹{total}</span>
-              </div>
-
-              {/* Coupon hint */}
-              <div className="flex items-center gap-2 text-xs text-white/50 mb-5">
-                <Tag size={12} />
-                <span>Have a coupon? Apply it at checkout.</span>
+                <span className="text-2xl font-bold text-[#FFB800]">₹{Math.max(0, finalTotal)}</span>
               </div>
 
               <Link
                 to="/checkout"
+                state={{ coupon: appliedCoupon?.code, discount: appliedCoupon?.discount }}
                 className="block rounded-full bg-[#FFB800] px-6 py-4 text-center font-bold text-[#2C221E] hover:brightness-110 transition hover:-translate-y-0.5 shadow-lg hover:shadow-xl"
               >
                 Proceed to Checkout →
               </Link>
 
-              {/* Trust Badges */}
               <div className="mt-6 space-y-2">
                 <div className="flex items-center gap-2 text-xs text-white/50"><Shield size={12} /> 100% Secure Payment</div>
                 <div className="flex items-center gap-2 text-xs text-white/50"><Truck size={12} /> Free Delivery on ₹499+</div>

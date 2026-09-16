@@ -146,3 +146,14 @@ export async function adminUploadHowToUseStepImage(stepId: number, file: File) {
   );
   return response.data;
 }
+
+export async function uploadNaturalGoodnessImage(file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+  const response = await apiClient.post(
+    "/api/v1/admin/content/natural-goodness/image",
+    formData,
+    { headers: { "Content-Type": "multipart/form-data" } }
+  );
+  return response.data;
+}

@@ -34,24 +34,24 @@ export default function LandingPage({ showNavFooter = false }: LandingPageProps)
 
       {/* ── 3. PRODUCTS SECTION (GREEN STRIP + 2 EQUAL FEATURED CARDS) ── */}
       <ProductsSection section={sections["products_section"]} />
-
-      {/* ── 4. COUPON PROMO STRIP (RED RIBBON BANNER) ── */}
+      {/* ── 5. COUPON PROMO STRIP (RED RIBBON BANNER) ── */}
       <CouponPromoSection />
 
-      {/* ── 5. NATURAL GOODNESS (MASCOT + SERVING BOARD SHOWCASE) ── */}
-      <NaturalGoodnessSection />
+      {/* ── 4. LEADERBOARD (TOP PURCHASERS) — Just below Our Products ── */}
+      <LeaderboardSection />
 
-      {/* ── 6. RIBBON DIVIDER (3D WAVED STITCHED RIBBON) ── */}
+
+      {/* ── 6. NATURAL GOODNESS (MASCOT + SERVING BOARD SHOWCASE) ── */}
+      <NaturalGoodnessSection brand={brand} />
+
+      {/* ── 7. RIBBON DIVIDER (3D WAVED STITCHED RIBBON) ── */}
       <RibbonDivider />
 
-      {/* ── 7. HOW TO ENJOY (4 STEP CARDS WITH CONNECTOR) ── */}
+      {/* ── 8. HOW TO ENJOY (4 STEP CARDS WITH CONNECTOR) ── */}
       <HowToUseSection section={howSec} />
 
-      {/* ── 8. CUSTOMER REVIEWS (YELLOW/WARM CARDS + HANGING ANIMATION) ── */}
+      {/* ── 9. CUSTOMER REVIEWS (YELLOW/WARM CARDS + HANGING ANIMATION) ── */}
       <ReviewsSection />
-
-      {/* ── 9. LEADERBOARD (TOP PURCHASERS) ── */}
-      <LeaderboardSection />
 
       {/* ── 10. FOOTER (WHEN STANDALONE) ── */}
       {showNavFooter && <Footer />}
