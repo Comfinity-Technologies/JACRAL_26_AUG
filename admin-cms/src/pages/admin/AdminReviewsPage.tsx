@@ -1,403 +1,456 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { apiClient } from "../../api/client";
 import {
-  Star, Plus, Trash2, CheckCircle2, EyeOff, Eye, Edit3, X, Save, Loader2
+  Star,
+  Plus,
+  Trash2,
+  Edit2,
+  CheckCircle,
+  XCircle,
+  MessageSquare,
+  Sparkles,
 } from "lucide-react";
 
-interface Review {
+interface ReviewItem {
   id: number;
   customer_name: string;
   customer_location?: string | null;
   review_text: string;
   rating: number;
-  display_order: number;
   is_active: boolean;
   is_published: boolean;
+  display_order: number;
   created_at: string;
 }
 
-interface ReviewFormData {
-  customer_name: string;
-  customer_location: string;
-  review_text: string;
-  rating: number;
-  display_order: number;
-  is_active: boolean;
-  is_published: boolean;
-}
-
-const EMPTY_FORM: ReviewFormData = {
-  customer_name: "",
-  customer_location: "",
-  review_text: "",
-  rating: 5,
-  display_order: 1,
-  is_active: true,
-  is_published: false,
-};
-
-async function apiFetch(path: string, options?: RequestInit) {
-  const token = localStorage.getItem("jacral_admin_token");
-  const res = await fetch(path, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: token ? `Bearer ${token}` : "",
-      ...(options?.headers ?? {}),
-    },
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: "Request failed" }));
-    throw new Error(err.detail || "Request failed");
-  }
-  return res.json();
-}
-
 export default function AdminReviewsPage() {
-  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [showForm, setShowForm] = useState(false);
-  const [editId, setEditId] = useState<number | null>(null);
-  const [form, setForm] = useState<ReviewFormData>(EMPTY_FORM);
-  const [saving, setSaving] = useState(false);
-  const [busyId, setBusyId] = useState<number | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [editingReview, setEditingReview] = useState<ReviewItem | null>(null);
 
-  const load = async () => {
-    setIsLoading(true);
-    setError(null);
+  // Google Fetch state
+  const [showGoogleModal, setShowGoogleModal] = useState(false);
+  const [googlePlaceId, setGooglePlaceId] = useState("");
+  const [isFetchingGoogle, setIsFetchingGoogle] = useState(false);
+
+  const [formData, setFormData] = useState({
+    customer_name: "",
+    customer_location: "",
+    review_text: "",
+    rating: 5,
+    is_published: true,
+    is_active: true,
+    display_order: 1,
+  });
+
+  const fetchReviews = async () => {
     try {
-      const data = await apiFetch("/api/v1/admin/reviews");
-      setReviews(data);
-    } catch (e: any) {
-      setError(e.message);
+      const res = await apiClient.get<ReviewItem[]>("/api/v1/admin/reviews");
+      setReviews(res.data);
+    } catch (err) {
+      console.error("Failed to fetch reviews:", err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    fetchReviews();
+  }, []);
 
-  const openCreate = () => {
-    setEditId(null);
-    setForm(EMPTY_FORM);
-    setShowForm(true);
-  };
-
-  const openEdit = (r: Review) => {
-    setEditId(r.id);
-    setForm({
-      customer_name: r.customer_name,
-      customer_location: r.customer_location ?? "",
-      review_text: r.review_text,
-      rating: r.rating,
-      display_order: r.display_order,
-      is_active: r.is_active,
-      is_published: r.is_published,
+  const openCreateModal = () => {
+    setEditingReview(null);
+    setFormData({
+      customer_name: "",
+      customer_location: "",
+      review_text: "",
+      rating: 5,
+      is_published: true,
+      is_active: true,
+      display_order: reviews.length + 1,
     });
-    setShowForm(true);
+    setShowModal(true);
   };
 
-  const handleSave = async () => {
-    setSaving(true);
+  const openEditModal = (review: ReviewItem) => {
+    setEditingReview(review);
+    setFormData({
+      customer_name: review.customer_name,
+      customer_location: review.customer_location || "",
+      review_text: review.review_text,
+      rating: review.rating,
+      is_published: review.is_published,
+      is_active: review.is_active,
+      display_order: review.display_order,
+    });
+    setShowModal(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
-      const body = {
-        ...form,
-        customer_location: form.customer_location || null,
-      };
-      if (editId) {
-        await apiFetch(`/api/v1/admin/reviews/${editId}`, {
-          method: "PUT",
-          body: JSON.stringify(body),
-        });
+      if (editingReview) {
+        await apiClient.put(`/api/v1/admin/reviews/${editingReview.id}`, formData);
       } else {
-        await apiFetch("/api/v1/admin/reviews", {
-          method: "POST",
-          body: JSON.stringify(body),
-        });
+        await apiClient.post("/api/v1/admin/reviews", formData);
       }
-      setShowForm(false);
-      await load();
-    } catch (e: any) {
-      alert(e.message);
+      setShowModal(false);
+      fetchReviews();
+    } catch (err: any) {
+      alert(err.response?.data?.detail || "Failed to save review");
+    }
+  };
+
+  const handleFetchGoogle = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!googlePlaceId.trim()) return;
+    try {
+      setIsFetchingGoogle(true);
+      const res = await apiClient.post("/api/v1/admin/reviews/fetch-google", { place_id: googlePlaceId });
+      alert(res.data.message);
+      setShowGoogleModal(false);
+      setGooglePlaceId("");
+      fetchReviews();
+    } catch (err: any) {
+      alert(err.response?.data?.detail || "Failed to fetch from Google API");
     } finally {
-      setSaving(false);
+      setIsFetchingGoogle(false);
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Delete this review? This cannot be undone.")) return;
-    setBusyId(id);
+    if (!confirm("Are you sure you want to delete this customer review?")) return;
     try {
-      await apiFetch(`/api/v1/admin/reviews/${id}`, { method: "DELETE" });
-      await load();
-    } catch (e: any) {
-      alert(e.message);
-    } finally {
-      setBusyId(null);
+      await apiClient.delete(`/api/v1/admin/reviews/${id}`);
+      fetchReviews();
+    } catch (err: any) {
+      alert(err.response?.data?.detail || "Failed to delete review");
     }
   };
 
-  const handlePublish = async (r: Review) => {
-    setBusyId(r.id);
+  const handleTogglePublish = async (review: ReviewItem) => {
     try {
-      if (r.is_published) {
-        await apiFetch(`/api/v1/admin/reviews/${r.id}/unpublish`, { method: "POST" });
-      } else {
-        await apiFetch(`/api/v1/admin/reviews/${r.id}/publish`, { method: "POST" });
-      }
-      await load();
-    } catch (e: any) {
-      alert(e.message);
-    } finally {
-      setBusyId(null);
+      const endpoint = review.is_published
+        ? `/api/v1/admin/reviews/${review.id}/unpublish`
+        : `/api/v1/admin/reviews/${review.id}/publish`;
+      await apiClient.post(endpoint);
+      fetchReviews();
+    } catch (err: any) {
+      alert(err.response?.data?.detail || "Failed to toggle review status");
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="p-8 space-y-6">
+        <div className="flex justify-between items-center">
+          <div className="h-8 w-48 bg-gray-200 animate-pulse rounded" />
+          <div className="h-10 w-32 bg-gray-200 animate-pulse rounded-full" />
+        </div>
+        <div className="h-96 bg-gray-200 animate-pulse rounded-3xl" />
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-[#FAF6EE] p-6 lg:p-8">
-
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-8 space-y-8 max-w-7xl mx-auto">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-[#2C221E]">Customer Reviews</h1>
-          <p className="text-sm text-[#7A6A60] mt-1">Manage and publish customer reviews shown on the homepage</p>
+          <h1 className="text-3xl font-bold text-[#2C221E] mb-2 flex items-center gap-3">
+            <div className="bg-amber-100 p-2 rounded-xl text-amber-600">
+              <MessageSquare size={24} />
+            </div>
+            Customer Reviews
+          </h1>
+          <p className="text-[#685B55]">
+            Manage, publish, and add customer reviews displayed on the website.
+          </p>
         </div>
-        <button
-          onClick={openCreate}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#285B3C] text-white text-sm font-bold shadow hover:bg-[#1E4A2E] transition-colors"
-        >
-          <Plus size={16} />
-          Add Review
-        </button>
+
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowGoogleModal(true)}
+            className="flex items-center gap-2 px-5 py-2.5 bg-white border-2 border-[#E88D36] text-[#E88D36] hover:bg-[#FAF6EE] rounded-full font-bold shadow-sm transition-all hover:scale-105 active:scale-95"
+          >
+            <Sparkles size={18} />
+            Fetch from Google
+          </button>
+          <button
+            onClick={openCreateModal}
+            className="flex items-center gap-2 px-5 py-2.5 bg-[#3B6E4C] hover:bg-[#2C5238] text-white rounded-full font-bold shadow-sm transition-all hover:scale-105 active:scale-95"
+          >
+            <Plus size={18} />
+            Add Review
+          </button>
+        </div>
       </div>
 
-      {/* Error */}
-      {error && (
-        <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium">{error}</div>
-      )}
-
-      {/* Loading */}
-      {isLoading && (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 size={28} className="animate-spin text-[#285B3C]" />
+      {/* Reviews Grid */}
+      {reviews.length === 0 ? (
+        <div className="text-center py-16 bg-white rounded-3xl border border-[#E5DCDB]">
+          <MessageSquare className="mx-auto text-gray-300 mb-3" size={48} />
+          <h3 className="text-lg font-bold text-[#2C221E]">No reviews yet</h3>
+          <p className="text-gray-500 text-sm mt-1">
+            Click "Add Review" above to create your first customer testimonial.
+          </p>
         </div>
-      )}
-
-      {/* Reviews table */}
-      {!isLoading && (
-        <div className="bg-white rounded-2xl shadow-sm border border-[#E8E0D5] overflow-hidden">
-          {reviews.length === 0 ? (
-            <div className="text-center py-20 text-[#9E928A]">
-              <Star size={32} className="mx-auto mb-3 opacity-30" />
-              <p className="font-semibold text-sm">No reviews yet</p>
-              <p className="text-xs mt-1">Click "Add Review" to create the first one</p>
-            </div>
-          ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-[#F7F0DF] border-b border-[#E8E0D5]">
-                <tr>
-                  <th className="text-left px-5 py-3 font-bold text-[#2C221E] text-xs uppercase tracking-wider">Customer</th>
-                  <th className="text-left px-5 py-3 font-bold text-[#2C221E] text-xs uppercase tracking-wider hidden md:table-cell">Review</th>
-                  <th className="text-center px-5 py-3 font-bold text-[#2C221E] text-xs uppercase tracking-wider">Rating</th>
-                  <th className="text-center px-5 py-3 font-bold text-[#2C221E] text-xs uppercase tracking-wider">Status</th>
-                  <th className="text-right px-5 py-3 font-bold text-[#2C221E] text-xs uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#F0E8DA]">
-                {reviews.map((r) => (
-                  <tr key={r.id} className="hover:bg-[#FAF6EE] transition-colors">
-                    <td className="px-5 py-4">
-                      <div className="font-semibold text-[#2C221E]">{r.customer_name}</div>
-                      {r.customer_location && (
-                        <div className="text-[#9E928A] text-xs mt-0.5">{r.customer_location}</div>
-                      )}
-                    </td>
-                    <td className="px-5 py-4 hidden md:table-cell max-w-xs">
-                      <p className="text-[#685B55] text-xs leading-relaxed line-clamp-2">{r.review_text}</p>
-                    </td>
-                    <td className="px-5 py-4 text-center">
-                      <div className="flex items-center justify-center gap-0.5">
-                        {Array.from({ length: r.rating }).map((_, i) => (
-                          <Star key={i} size={12} className="fill-[#E5A832] text-[#E5A832]" />
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-5 py-4 text-center">
-                      <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${
-                          r.is_published
-                            ? "bg-[#E5EEDB] text-[#285B3C]"
-                            : "bg-[#FFF3E0] text-[#C67A20]"
-                        }`}
-                      >
-                        {r.is_published ? <CheckCircle2 size={10} /> : <EyeOff size={10} />}
-                        {r.is_published ? "Published" : "Draft"}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center justify-end gap-2">
-                        {/* Publish / Unpublish */}
-                        <button
-                          onClick={() => handlePublish(r)}
-                          disabled={busyId === r.id}
-                          title={r.is_published ? "Unpublish" : "Publish"}
-                          className={`p-2 rounded-lg transition-colors ${
-                            r.is_published
-                              ? "text-[#9E928A] hover:bg-[#FFF3E0] hover:text-[#C67A20]"
-                              : "text-[#285B3C] hover:bg-[#E5EEDB]"
-                          }`}
-                        >
-                          {busyId === r.id ? <Loader2 size={15} className="animate-spin" /> : r.is_published ? <EyeOff size={15} /> : <Eye size={15} />}
-                        </button>
-
-                        {/* Edit */}
-                        <button
-                          onClick={() => openEdit(r)}
-                          title="Edit"
-                          className="p-2 rounded-lg text-[#685B55] hover:bg-[#F0E8DA] transition-colors"
-                        >
-                          <Edit3 size={15} />
-                        </button>
-
-                        {/* Delete */}
-                        <button
-                          onClick={() => handleDelete(r.id)}
-                          disabled={busyId === r.id}
-                          title="Delete"
-                          className="p-2 rounded-lg text-[#C0444A] hover:bg-red-50 transition-colors"
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      )}
-
-      {/* Add / Edit Modal */}
-      {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-[#E8E0D5]">
-
-            {/* Modal Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[#E8E0D5]">
-              <h2 className="text-base font-black text-[#2C221E]">
-                {editId ? "Edit Review" : "Add Customer Review"}
-              </h2>
-              <button onClick={() => setShowForm(false)} className="text-[#9E928A] hover:text-[#2C221E] transition-colors">
-                <X size={18} />
-              </button>
-            </div>
-
-            {/* Modal Body */}
-            <div className="px-6 py-5 space-y-4">
-
-              {/* Customer Name */}
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {reviews.map((rev) => (
+            <div
+              key={rev.id}
+              className="bg-white rounded-2xl border border-[#E5DCDB] p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow relative"
+            >
               <div>
-                <label className="block text-xs font-bold text-[#2C221E] uppercase tracking-wider mb-1.5">Customer Name *</label>
-                <input
-                  type="text"
-                  value={form.customer_name}
-                  onChange={(e) => setForm({ ...form, customer_name: e.target.value })}
-                  placeholder="e.g. Vikram Menon"
-                  className="w-full rounded-xl border border-[#D5C9BF] px-4 py-2.5 text-sm text-[#2C221E] focus:outline-none focus:ring-2 focus:ring-[#285B3C]/30 bg-[#FAF6EE]"
-                />
-              </div>
-
-              {/* Location */}
-              <div>
-                <label className="block text-xs font-bold text-[#2C221E] uppercase tracking-wider mb-1.5">Location (optional)</label>
-                <input
-                  type="text"
-                  value={form.customer_location}
-                  onChange={(e) => setForm({ ...form, customer_location: e.target.value })}
-                  placeholder="e.g. Kochi"
-                  className="w-full rounded-xl border border-[#D5C9BF] px-4 py-2.5 text-sm text-[#2C221E] focus:outline-none focus:ring-2 focus:ring-[#285B3C]/30 bg-[#FAF6EE]"
-                />
-              </div>
-
-              {/* Review Text */}
-              <div>
-                <label className="block text-xs font-bold text-[#2C221E] uppercase tracking-wider mb-1.5">Review Text *</label>
-                <textarea
-                  value={form.review_text}
-                  onChange={(e) => setForm({ ...form, review_text: e.target.value })}
-                  rows={4}
-                  placeholder="Write the customer review here..."
-                  className="w-full rounded-xl border border-[#D5C9BF] px-4 py-2.5 text-sm text-[#2C221E] focus:outline-none focus:ring-2 focus:ring-[#285B3C]/30 bg-[#FAF6EE] resize-none"
-                />
-              </div>
-
-              {/* Rating + Order */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-[#2C221E] uppercase tracking-wider mb-1.5">Rating (1–5)</label>
-                  <select
-                    value={form.rating}
-                    onChange={(e) => setForm({ ...form, rating: Number(e.target.value) })}
-                    className="w-full rounded-xl border border-[#D5C9BF] px-4 py-2.5 text-sm text-[#2C221E] focus:outline-none focus:ring-2 focus:ring-[#285B3C]/30 bg-[#FAF6EE]"
-                  >
-                    {[5, 4, 3, 2, 1].map((n) => (
-                      <option key={n} value={n}>{n} Star{n !== 1 ? "s" : ""}</option>
+                {/* Header: Stars & Status */}
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-1 text-amber-400">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        size={16}
+                        className={
+                          star <= rev.rating
+                            ? "fill-amber-400 text-amber-400"
+                            : "text-gray-200"
+                        }
+                      />
                     ))}
-                  </select>
+                  </div>
+
+                  <button
+                    onClick={() => handleTogglePublish(rev)}
+                    className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${
+                      rev.is_published
+                        ? "bg-green-100 text-green-700 hover:bg-green-200"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                    title="Click to toggle publish"
+                  >
+                    {rev.is_published ? "Published" : "Draft"}
+                  </button>
                 </div>
-                <div>
-                  <label className="block text-xs font-bold text-[#2C221E] uppercase tracking-wider mb-1.5">Display Order</label>
-                  <input
-                    type="number"
-                    min={1}
-                    value={form.display_order}
-                    onChange={(e) => setForm({ ...form, display_order: Number(e.target.value) })}
-                    className="w-full rounded-xl border border-[#D5C9BF] px-4 py-2.5 text-sm text-[#2C221E] focus:outline-none focus:ring-2 focus:ring-[#285B3C]/30 bg-[#FAF6EE]"
-                  />
+
+                {/* Review Text */}
+                <p className="text-[#2C221E] text-sm leading-relaxed mb-4 italic">
+                  "{rev.review_text}"
+                </p>
+
+                {/* Author Info */}
+                <div className="pt-2 border-t border-gray-100">
+                  <p className="font-bold text-[#2C221E] text-sm">
+                    {rev.customer_name}
+                  </p>
+                  {rev.customer_location && (
+                    <p className="text-xs text-gray-500">
+                      {rev.customer_location}
+                    </p>
+                  )}
                 </div>
               </div>
 
-              {/* Toggles */}
-              <div className="flex items-center gap-6">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={form.is_active}
-                    onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
-                    className="w-4 h-4 rounded accent-[#285B3C]"
-                  />
-                  <span className="text-sm font-medium text-[#2C221E]">Active</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={form.is_published}
-                    onChange={(e) => setForm({ ...form, is_published: e.target.checked })}
-                    className="w-4 h-4 rounded accent-[#285B3C]"
-                  />
-                  <span className="text-sm font-medium text-[#2C221E]">Published (visible on homepage)</span>
-                </label>
+              {/* Actions */}
+              <div className="flex items-center justify-end gap-2 mt-4 pt-3 border-t border-gray-100">
+                <button
+                  onClick={() => openEditModal(rev)}
+                  className="p-2 text-gray-500 hover:text-[#3B6E4C] hover:bg-gray-50 rounded-lg transition-colors"
+                  title="Edit"
+                >
+                  <Edit2 size={16} />
+                </button>
+                <button
+                  onClick={() => handleDelete(rev.id)}
+                  className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  title="Delete"
+                >
+                  <Trash2 size={16} />
+                </button>
               </div>
             </div>
+          ))}
+        </div>
+      )}
 
-            {/* Modal Footer */}
-            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[#E8E0D5] bg-[#FAF6EE] rounded-b-2xl">
+      {/* Create / Edit Modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-xl animate-in fade-in zoom-in-95">
+            <h2 className="text-2xl font-bold text-[#2C221E] mb-5">
+              {editingReview ? "Edit Review" : "Add New Customer Review"}
+            </h2>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#685B55] mb-1">
+                  Customer Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.customer_name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, customer_name: e.target.value })
+                  }
+                  placeholder="e.g. Dr. Priya Sharma"
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#3B6E4C]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#685B55] mb-1">
+                  Location (optional)
+                </label>
+                <input
+                  type="text"
+                  value={formData.customer_location}
+                  onChange={(e) =>
+                    setFormData({ ...formData, customer_location: e.target.value })
+                  }
+                  placeholder="e.g. Bengaluru, Karnataka"
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#3B6E4C]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#685B55] mb-1">
+                  Rating *
+                </label>
+                <div className="flex items-center gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, rating: star })}
+                      className="p-1 hover:scale-110 transition-transform"
+                    >
+                      <Star
+                        size={24}
+                        className={
+                          star <= formData.rating
+                            ? "fill-amber-400 text-amber-400"
+                            : "text-gray-300"
+                        }
+                      />
+                    </button>
+                  ))}
+                  <span className="text-sm font-bold ml-2 text-gray-700">
+                    {formData.rating} Stars
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#685B55] mb-1">
+                  Review Text *
+                </label>
+                <textarea
+                  required
+                  rows={4}
+                  value={formData.review_text}
+                  onChange={(e) =>
+                    setFormData({ ...formData, review_text: e.target.value })
+                  }
+                  placeholder="What did the customer say about Jacral Oats..."
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#3B6E4C]"
+                />
+              </div>
+
+              <div className="flex items-center gap-3 pt-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.is_published}
+                    onChange={(e) =>
+                      setFormData({ ...formData, is_published: e.target.checked })
+                    }
+                    className="rounded text-[#3B6E4C] focus:ring-[#3B6E4C] h-4 w-4"
+                  />
+                  <span className="text-sm font-semibold text-[#2C221E]">
+                    Publish on website immediately
+                  </span>
+                </label>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="px-5 py-2.5 rounded-full text-gray-600 hover:bg-gray-100 font-semibold transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 bg-[#3B6E4C] hover:bg-[#2C5238] text-white rounded-full font-bold shadow-sm transition-all"
+                >
+                  {editingReview ? "Save Changes" : "Create Review"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Google Fetch Modal */}
+      {showGoogleModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-xl animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-2xl font-bold text-[#2C221E] flex items-center gap-2">
+                <Sparkles className="text-[#E88D36]" size={24} />
+                Fetch Google Reviews
+              </h2>
               <button
-                onClick={() => setShowForm(false)}
-                className="px-5 py-2.5 rounded-xl text-sm font-semibold text-[#685B55] hover:bg-[#F0E8DA] transition-colors"
+                onClick={() => setShowGoogleModal(false)}
+                className="text-gray-400 hover:text-gray-600 p-2"
               >
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={saving || !form.customer_name.trim() || !form.review_text.trim()}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#285B3C] text-white text-sm font-bold shadow hover:bg-[#1E4A2E] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
-                {saving ? "Saving..." : editId ? "Save Changes" : "Add Review"}
+                <XCircle size={24} />
               </button>
             </div>
+
+            <p className="text-sm text-[#685B55] mb-6">
+              Enter your Google Place ID to automatically pull the top 5 most relevant reviews. Reviews will be added as <strong>drafts</strong> so you can approve them before they go live on your website.
+            </p>
+
+            <form onSubmit={handleFetchGoogle} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#685B55] mb-1">
+                  Google Place ID *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={googlePlaceId}
+                  onChange={(e) => setGooglePlaceId(e.target.value)}
+                  placeholder="e.g. ChIJN1t_tDeuEmsRUsoyG83frY4"
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#3B6E4C]"
+                />
+                <p className="text-xs text-gray-400 mt-2">
+                  <a href="https://developers.google.com/maps/documentation/places/web-service/place-id" target="_blank" rel="noreferrer" className="text-blue-500 hover:underline">
+                    Find your Place ID
+                  </a>
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => setShowGoogleModal(false)}
+                  className="px-5 py-2.5 rounded-full text-gray-600 hover:bg-gray-100 font-semibold transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isFetchingGoogle || !googlePlaceId.trim()}
+                  className="px-6 py-2.5 bg-[#E88D36] hover:bg-[#D77C25] disabled:opacity-50 text-white rounded-full font-bold shadow-sm transition-all"
+                >
+                  {isFetchingGoogle ? "Fetching..." : "Fetch Reviews"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

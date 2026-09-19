@@ -1,52 +1,66 @@
 """
-JACRAL – Analytics / UTM routes.
+JACRAL – Public analytics routes.
 
-POST /api/v1/analytics/visit   PUBLIC
+GET /api/v1/analytics/top-customers   Returns top 25 customers by total items ordered
 """
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models.utm_visit import UtmVisit
-from app.schemas.analytics import UtmVisitRequest, TopCustomer
-from app.services import analytics_service
+from app.models.order import Order, OrderItem
+from app.models.user import User
 
 router = APIRouter(tags=["Analytics"])
 
 
-@router.post("/visit", status_code=201, summary="Record an anonymous UTM visit")
-def record_visit(data: UtmVisitRequest, db: Session = Depends(get_db)):
-    visit = UtmVisit(**data.model_dump())
-    db.add(visit)
-    db.commit()
-    return {"success": True, "message": "Visit recorded."}
+@router.get("/", summary="Analytics root (stub)")
+def get_analytics():
+    return []
 
 
-@router.get("/top-customers", response_model=list[TopCustomer], summary="Get top customers for leaderboard")
-def top_customers(db: Session = Depends(get_db)):
-    return analytics_service.get_top_customers(db, limit=10)
+@router.get(
+    "/top-customers",
+    summary="Top customers by total items ordered (for Jacral Champions leaderboard)",
+)
+def get_top_customers(
+    limit: int = Query(default=25, ge=1, le=25),
+    db: Session = Depends(get_db),
+):
+    """
+    Returns up to 25 customers ranked by total number of items ordered
+    (summed across all their confirmed orders).
 
+    When zero real orders exist, returns an empty list [] — the frontend
+    will display a friendly empty-state card in that case.
 
-@router.get("/summary", summary="Public analytics summary for admin analytics page")
-def analytics_summary(db: Session = Depends(get_db)):
-    """Returns the same data as the admin dashboard but without auth guard, for use by admin analytics page."""
-    overview = analytics_service.get_dashboard_overview(db)
-    top_products = analytics_service.get_top_products(db, limit=10)
-    return {
-        "total_revenue": float(overview.total_revenue),
-        "total_orders": overview.total_orders,
-        "total_customers": overview.total_customers,
-        "pending_orders": overview.pending_orders,
-        "processing_orders": overview.confirmed_orders,
-        "shipped_orders": 0,
-        "delivered_orders": overview.completed_orders,
-        "top_products": [
-            {
-                "id": p.product_id,
-                "name": p.product_name,
-                "total_sold": p.total_sold,
-                "revenue": float(p.revenue),
-            }
-            for p in top_products
-        ],
-    }
+    Ordering: descending by total_items_ordered.
+    Only includes orders with status != 'cancelled'.
+    """
+    rows = (
+        db.query(
+            User.id.label("user_id"),
+            User.name.label("name"),
+            func.count(Order.id.distinct()).label("total_orders"),
+            func.coalesce(func.sum(OrderItem.quantity), 0).label("total_items_ordered"),
+            func.coalesce(func.sum(OrderItem.subtotal), 0).label("total_spent"),
+        )
+        .join(Order, Order.user_id == User.id)
+        .join(OrderItem, OrderItem.order_id == Order.id)
+        .filter(Order.status != "cancelled")
+        .group_by(User.id, User.name)
+        .order_by(func.coalesce(func.sum(OrderItem.quantity), 0).desc())
+        .limit(limit)
+        .all()
+    )
+
+    return [
+        {
+            "user_id": r.user_id,
+            "name": r.name,
+            "total_orders": int(r.total_orders),
+            "total_items_ordered": int(r.total_items_ordered),
+            "total_spent": f"{float(r.total_spent):,.0f}",
+        }
+        for r in rows
+    ]

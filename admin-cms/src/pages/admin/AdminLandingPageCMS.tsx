@@ -24,6 +24,7 @@ import {
   updateBrandDraft,
   updateSlide,
   uploadSlideImage,
+  updateSectionDraft,
   publishLandingPage,
   adminGetHowToUseSteps,
   adminCreateHowToUseStep,
@@ -41,6 +42,8 @@ import type {
 } from "../../types/landingPage";
 
 
+import AdminReviewsPage from "./AdminReviewsPage";
+
 export default function AdminLandingPageCMS() {
   const [data, setData] = useState<AdminLandingPageData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -56,6 +59,14 @@ export default function AdminLandingPageCMS() {
   const [slidesDraft, setSlidesDraft] = useState<HeroSlideAdmin[]>([]);
   const [previewOpen, setPreviewOpen] = useState(false);
 
+  // ── Natural Goodness section state ──
+  const [naturalGoodnessDraft, setNaturalGoodnessDraft] = useState<{
+    title: string;
+    subtitle: string;
+  }>({ title: "", subtitle: "" });
+  const [ngImage, setNgImage] = useState<string | null>(null);
+  const [ngUploading, setNgUploading] = useState(false);
+
   // ── How To Use state ──
   const [howToUseSteps, setHowToUseSteps] = useState<HowToUseStepAdmin[]>([]);
   const [howToUseLoading, setHowToUseLoading] = useState(false);
@@ -67,10 +78,8 @@ export default function AdminLandingPageCMS() {
   }>({ step_number: "", title: "", description: "" });
   const [showNewStepForm, setShowNewStepForm] = useState(false);
   const [uploadingStepId, setUploadingStepId] = useState<number | null>(null);
-  const [uploadingNaturalGoodness, setUploadingNaturalGoodness] = useState(false);
 
   const logoInputRef = useRef<HTMLInputElement>(null);
-  const naturalGoodnessInputRef = useRef<HTMLInputElement>(null);
 
 
   const showToast = (message: string, type: "success" | "error" = "success") => {
@@ -88,6 +97,13 @@ export default function AdminLandingPageCMS() {
         tagline: res.brand.tagline || "",
       });
       setSlidesDraft(res.hero_slides || []);
+
+      const ngSection = res.sections?.["natural_goodness"];
+      setNaturalGoodnessDraft({
+        title: ngSection?.title || "",
+        subtitle: ngSection?.subtitle || "",
+      });
+      setNgImage(res.brand?.natural_goodness_image_url || null);
     } catch (err: any) {
       console.error("Failed to load CMS data:", err);
       showToast("Failed to load CMS content", "error");
@@ -188,20 +204,6 @@ export default function AdminLandingPageCMS() {
     }
   };
 
-  const handleNaturalGoodnessImageUpload = async (file: File) => {
-    try {
-      setUploadingNaturalGoodness(true);
-      await uploadNaturalGoodnessImage(file);
-      showToast("Natural Goodness image uploaded successfully!");
-      await loadData();
-    } catch (err: any) {
-      showToast(err?.response?.data?.detail || "Image upload failed", "error");
-    } finally {
-      setUploadingNaturalGoodness(false);
-      if (naturalGoodnessInputRef.current) naturalGoodnessInputRef.current.value = "";
-    }
-  };
-
 
 
   // Handle Logo Upload
@@ -290,6 +292,12 @@ export default function AdminLandingPageCMS() {
         });
       }
 
+      // 3. Save Natural Goodness heading/tagline
+      await updateSectionDraft("natural_goodness", {
+        title: naturalGoodnessDraft.title || null,
+        subtitle: naturalGoodnessDraft.subtitle || null,
+      });
+
       showToast("All drafts saved successfully. Click Publish to make them live.");
       await loadData();
     } catch (err: any) {
@@ -297,6 +305,21 @@ export default function AdminLandingPageCMS() {
       showToast("Failed to save drafts", "error");
     } finally {
       setSaving(false);
+    }
+  };
+
+  // Handle Natural Goodness image upload — publishes immediately, same as the logo
+  const handleNaturalGoodnessImageUpload = async (file: File) => {
+    try {
+      setNgUploading(true);
+      const res = await uploadNaturalGoodnessImage(file);
+      setNgImage(res.image_url);
+      showToast("Natural Goodness image updated — it's live now.");
+    } catch (err: any) {
+      console.error(err);
+      showToast(err?.response?.data?.detail || "Image upload failed", "error");
+    } finally {
+      setNgUploading(false);
     }
   };
 
@@ -321,6 +344,8 @@ export default function AdminLandingPageCMS() {
     }
   };
 
+  const [activeTab, setActiveTab] = useState<"landing" | "reviews">("landing");
+
   if (loading && !data) {
     return (
       <div className="p-8 flex items-center justify-center min-h-[50vh]">
@@ -342,11 +367,10 @@ export default function AdminLandingPageCMS() {
       {/* ── TOAST NOTIFICATION ── */}
       {toast && (
         <div
-          className={`fixed top-6 right-6 z-50 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-bold uppercase tracking-wider animate-slideDown ${
-            toast.type === "success"
+          className={`fixed top-6 right-6 z-50 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-bold uppercase tracking-wider animate-slideDown ${toast.type === "success"
               ? "bg-[#3B6E4C] text-white"
               : "bg-[#D93333] text-white"
-          }`}
+            }`}
         >
           {toast.type === "success" ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
           <span>{toast.message}</span>
@@ -359,62 +383,94 @@ export default function AdminLandingPageCMS() {
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#3B6E4C]">
             <span>Website Content</span>
             <span>/</span>
-            <span>Landing Page</span>
+            <span>{activeTab === "landing" ? "Landing Page" : "Customer Reviews"}</span>
           </div>
           <h1 className="text-2xl md:text-3xl font-black uppercase text-[#2C221E] mt-1">
-            LANDING PAGE CMS
+            {activeTab === "landing" ? "LANDING PAGE CMS" : "CUSTOMER REVIEWS"}
           </h1>
-          <div className="flex items-center gap-2 mt-1.5">
-            <span
-              className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider ${
-                hasPending
-                  ? "bg-[#FFB800]/20 text-[#B38300]"
-                  : "bg-[#3B6E4C]/15 text-[#3B6E4C]"
-              }`}
-            >
-              <span className={`w-2 h-2 rounded-full ${hasPending ? "bg-[#FFB800]" : "bg-[#3B6E4C]"}`} />
-              {hasPending ? "Draft Changes Pending" : "All Changes Published Live"}
-            </span>
-            <span className="text-xs text-[#685B55]">
-              Edits save as draft. Customer website renders published content.
-            </span>
-          </div>
+          {activeTab === "landing" && (
+            <div className="flex items-center gap-2 mt-1.5">
+              <span
+                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider ${hasPending
+                    ? "bg-[#FFB800]/20 text-[#B38300]"
+                    : "bg-[#3B6E4C]/15 text-[#3B6E4C]"
+                  }`}
+              >
+                <span className={`w-2 h-2 rounded-full ${hasPending ? "bg-[#FFB800]" : "bg-[#3B6E4C]"}`} />
+                {hasPending ? "Draft Changes Pending" : "All Changes Published Live"}
+              </span>
+              <span className="text-xs text-[#685B55]">
+                Edits save as draft. Customer website renders published content.
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={handleSaveDraft}
-            disabled={saving || publishing}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-[#2C221E]/20 bg-white text-[#2C221E] text-xs font-bold uppercase tracking-wider hover:bg-[#FAF6EE] transition-all shadow-sm"
-          >
-            <Save size={15} />
-            <span>{saving ? "Saving..." : "Save Draft"}</span>
-          </button>
+        {activeTab === "landing" && (
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleSaveDraft}
+              disabled={saving || publishing}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-[#2C221E]/20 bg-white text-[#2C221E] text-xs font-bold uppercase tracking-wider hover:bg-[#FAF6EE] transition-all shadow-sm"
+            >
+              <Save size={15} />
+              <span>{saving ? "Saving..." : "Save Draft"}</span>
+            </button>
 
-          <a
-            href="/"
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-[#3B6E4C]/30 bg-[#3B6E4C]/10 text-[#3B6E4C] text-xs font-bold uppercase tracking-wider hover:bg-[#3B6E4C]/20 transition-all"
-          >
-            <Eye size={15} />
-            <span>Preview Live</span>
-            <ExternalLink size={12} />
-          </a>
+            <a
+              href="/"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-[#3B6E4C]/30 bg-[#3B6E4C]/10 text-[#3B6E4C] text-xs font-bold uppercase tracking-wider hover:bg-[#3B6E4C]/20 transition-all"
+            >
+              <Eye size={15} />
+              <span>Preview Live</span>
+              <ExternalLink size={12} />
+            </a>
 
-          <button
-            type="button"
-            onClick={handlePublishLive}
-            disabled={publishing || saving}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#E88D36] text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-[#E88D36]/25 hover:bg-[#D47E2A] hover:scale-[1.02] transition-all"
-          >
-            <Send size={15} />
-            <span>{publishing ? "Publishing..." : "PUBLISH LIVE"}</span>
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={handlePublishLive}
+              disabled={publishing || saving}
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#E88D36] text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-[#E88D36]/25 hover:bg-[#D47E2A] hover:scale-[1.02] transition-all"
+            >
+              <Send size={15} />
+              <span>{publishing ? "Publishing..." : "PUBLISH LIVE"}</span>
+            </button>
+          </div>
+        )}
       </div>
+
+      {/* ── TABS NAVIGATION ── */}
+      <div className="flex items-center gap-4 border-b border-[#E5DCDB]">
+        <button
+          type="button"
+          onClick={() => setActiveTab("landing")}
+          className={`px-4 py-3 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors ${
+            activeTab === "landing"
+              ? "border-[#3B6E4C] text-[#3B6E4C]"
+              : "border-transparent text-[#685B55] hover:text-[#2C221E] hover:border-[#E5DCDB]"
+          }`}
+        >
+          Landing Page
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("reviews")}
+          className={`px-4 py-3 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors ${
+            activeTab === "reviews"
+              ? "border-[#3B6E4C] text-[#3B6E4C]"
+              : "border-transparent text-[#685B55] hover:text-[#2C221E] hover:border-[#E5DCDB]"
+          }`}
+        >
+          Customer Reviews
+        </button>
+      </div>
+
+      {activeTab === "landing" ? (
+        <>
 
       {/* ── SECTION 1: BRAND LOGO & SETTINGS ── */}
       <div className="rounded-3xl bg-white border border-[#E5DCDB] p-6 md:p-8 shadow-sm space-y-6">
@@ -699,83 +755,346 @@ export default function AdminLandingPageCMS() {
         </div>
       </div>
 
-
-
-      {/* ── SECTION 3: NATURAL GOODNESS IMAGE ── */}
-      <div className="rounded-3xl bg-white border border-[#E5DCDB] p-6 md:p-8 shadow-sm space-y-6">
+      {/* ── SECTION 3: HOW TO USE ── */}
+      <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#285B3C]/10 text-[#285B3C] flex items-center justify-center font-black">
+            <div className="w-8 h-8 rounded-lg bg-[#3B6E4C]/10 text-[#3B6E4C] flex items-center justify-center font-black">
               3
             </div>
             <h2 className="text-lg font-black uppercase text-[#2C221E] tracking-tight">
-              NATURAL GOODNESS SECTION IMAGE
+              HOW TO USE SECTION
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowNewStepForm((v) => !v)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#2C221E] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#3D302B] transition"
+          >
+            <Plus size={14} />
+            Add Step
+          </button>
+        </div>
+
+        {/* New step form */}
+        {showNewStepForm && (
+          <div className="rounded-3xl bg-white border border-[#E5DCDB] p-6 space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#2C221E] mb-1">
+                  Step Number
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={newStepForm.step_number}
+                  onChange={(e) => setNewStepForm({ ...newStepForm, step_number: e.target.value })}
+                  placeholder="1"
+                  className="w-full px-4 py-2 rounded-xl border border-[#E5DCDB] text-sm focus:outline-none focus:border-[#E88D36]"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#2C221E] mb-1">
+                  Title
+                </label>
+                <input
+                  type="text"
+                  value={newStepForm.title}
+                  onChange={(e) => setNewStepForm({ ...newStepForm, title: e.target.value })}
+                  placeholder="e.g. POUR CEREAL"
+                  className="w-full px-4 py-2 rounded-xl border border-[#E5DCDB] text-sm focus:outline-none focus:border-[#E88D36]"
+                />
+              </div>
+              <div className="sm:col-span-3">
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#2C221E] mb-1">
+                  Description
+                </label>
+                <textarea
+                  rows={2}
+                  value={newStepForm.description}
+                  onChange={(e) => setNewStepForm({ ...newStepForm, description: e.target.value })}
+                  placeholder="Add 40–50g of Jacral Jackfruit Cereal into your breakfast bowl."
+                  className="w-full px-4 py-2 rounded-xl border border-[#E5DCDB] text-sm focus:outline-none focus:border-[#E88D36]"
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleCreateStep}
+                disabled={saving}
+                className="px-5 py-2 rounded-xl bg-[#3B6E4C] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#2E583C]"
+              >
+                Create Step
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowNewStepForm(false);
+                  setNewStepForm({ step_number: "", title: "", description: "" });
+                }}
+                className="px-5 py-2 rounded-xl border border-[#E5DCDB] text-xs font-bold uppercase tracking-wider text-[#2C221E] hover:bg-[#FAF6EE]"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        {howToUseLoading ? (
+          <div className="flex items-center gap-3 text-[#685B55] py-6">
+            <RefreshCw className="animate-spin text-[#E88D36]" size={18} />
+            <span className="text-sm font-semibold">Loading steps...</span>
+          </div>
+        ) : howToUseSteps.length === 0 ? (
+          <div className="rounded-3xl bg-white border border-dashed border-[#E5DCDB] p-10 text-center text-[#685B55] text-sm font-semibold">
+            No steps yet. Click "Add Step" to create the first one.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[...howToUseSteps]
+              .sort((a, b) => (a.sort_order ?? a.step_number) - (b.sort_order ?? b.step_number))
+              .map((step) => {
+                const isEditing = editingStep?.id === step.id;
+                return (
+                  <div
+                    key={step.id}
+                    className="rounded-3xl bg-white border border-[#E5DCDB] p-6 space-y-4 shadow-sm"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="px-3 py-1 bg-[#2C221E] text-[#FFB800] text-xs font-black uppercase rounded-lg tracking-wider">
+                        Step 0{step.step_number}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setEditingStep(isEditing ? null : { ...step })}
+                          className="p-2 rounded-lg text-[#2C221E] hover:bg-[#FAF6EE]"
+                          title="Edit step"
+                        >
+                          {isEditing ? <X size={15} /> : <Pencil size={15} />}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteStep(step.id)}
+                          className="p-2 rounded-lg text-[#D93333] hover:bg-red-50"
+                          title="Delete step"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Image upload */}
+                    <div className="w-full h-32 rounded-2xl border-2 border-dashed border-[#E5DCDB] bg-[#FAF6EE] flex items-center justify-center overflow-hidden relative">
+                      {step.image_url ? (
+                        <img
+                          src={getImageUrl(step.image_url)}
+                          alt={step.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="text-center text-[#685B55] space-y-1">
+                          <ImageIcon size={20} className="mx-auto text-[#E88D36]" />
+                          <p className="text-[10px] font-bold uppercase">No Image</p>
+                        </div>
+                      )}
+                      {uploadingStepId === step.id && (
+                        <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
+                          <RefreshCw className="animate-spin text-[#E88D36]" size={18} />
+                        </div>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      id={`step-img-${step.id}`}
+                      accept="image/png,image/jpeg,image/webp"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) handleStepImageUpload(step.id, f);
+                      }}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor={`step-img-${step.id}`}
+                      className="w-full block text-center py-2 px-4 rounded-xl bg-[#2C221E] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#3D302B] cursor-pointer transition"
+                    >
+                      Upload Step Image
+                    </label>
+
+                    {isEditing ? (
+                      <div className="space-y-3 pt-2 border-t border-[#FAF6EE]">
+                        <div>
+                          <label className="block text-xs font-bold uppercase tracking-wider text-[#2C221E] mb-1">
+                            Title
+                          </label>
+                          <input
+                            type="text"
+                            value={editingStep.title}
+                            onChange={(e) => setEditingStep({ ...editingStep, title: e.target.value })}
+                            className="w-full px-4 py-2 rounded-xl border border-[#E5DCDB] text-sm focus:outline-none focus:border-[#E88D36]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold uppercase tracking-wider text-[#2C221E] mb-1">
+                            Description
+                          </label>
+                          <textarea
+                            rows={3}
+                            value={editingStep.description}
+                            onChange={(e) => setEditingStep({ ...editingStep, description: e.target.value })}
+                            className="w-full px-4 py-2 rounded-xl border border-[#E5DCDB] text-sm focus:outline-none focus:border-[#E88D36]"
+                          />
+                        </div>
+                        <label className="flex items-center gap-2 cursor-pointer text-xs font-bold uppercase tracking-wider text-[#2C221E]">
+                          <input
+                            type="checkbox"
+                            checked={editingStep.is_active}
+                            onChange={(e) => setEditingStep({ ...editingStep, is_active: e.target.checked })}
+                            className="w-4 h-4 rounded text-[#3B6E4C] focus:ring-[#3B6E4C]"
+                          />
+                          <span>Active</span>
+                        </label>
+                        <div className="flex items-center gap-3 pt-1">
+                          <button
+                            type="button"
+                            onClick={handleUpdateStep}
+                            disabled={saving}
+                            className="px-5 py-2 rounded-xl bg-[#3B6E4C] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#2E583C]"
+                          >
+                            Save
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditingStep(null)}
+                            className="px-5 py-2 rounded-xl border border-[#E5DCDB] text-xs font-bold uppercase tracking-wider text-[#2C221E] hover:bg-[#FAF6EE]"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="pt-2 border-t border-[#FAF6EE]">
+                        <p className="text-sm font-bold text-[#2C221E]">{step.title}</p>
+                        <p className="text-xs text-[#685B55] mt-1">{step.description}</p>
+                        {!step.is_active && (
+                          <span className="inline-block mt-2 text-[10px] font-black uppercase tracking-wider text-[#D93333]">
+                            Inactive
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+          </div>
+        )}
+      </div>
+
+      {/* ── SECTION 4: NATURAL GOODNESS ── */}
+      <div className="rounded-3xl bg-white border border-[#E5DCDB] p-6 md:p-8 shadow-sm space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-[#E88D36]/10 text-[#E88D36] flex items-center justify-center font-black">
+              4
+            </div>
+            <h2 className="text-lg font-black uppercase text-[#2C221E] tracking-tight">
+              NATURAL GOODNESS SECTION
             </h2>
           </div>
           <span className="text-[11px] font-bold text-[#685B55] uppercase tracking-wider">
-            Product / Serving Board Photo
+            Image publishes instantly · Text saves as draft
           </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start pt-2">
-          <div className="md:col-span-5 space-y-4">
+          {/* Image Upload & Preview */}
+          <div className="md:col-span-5 space-y-3">
             <p className="text-xs font-bold uppercase tracking-wider text-[#2C221E]">
-              Current Image
+              Product Image
             </p>
-            <div className="w-full h-48 rounded-2xl border-2 border-dashed border-[#E5DCDB] bg-[#FAF6EE] flex items-center justify-center p-4 relative overflow-hidden">
-              {data?.brand?.draft_logo_url !== undefined && (() => {
-                const ngUrl = (data?.brand as any)?.natural_goodness_image_url ||
-                  (data?.brand as any)?.draft_natural_goodness_image_url;
-                return ngUrl ? (
-                  <img
-                    src={getImageUrl(ngUrl)}
-                    alt="Natural Goodness Product"
-                    className="max-h-full max-w-full object-contain"
-                  />
-                ) : (
-                  <div className="text-center text-[#685B55] space-y-1">
-                    <ImageIcon size={28} className="mx-auto text-[#E88D36]" />
-                    <p className="text-xs font-bold uppercase tracking-wider">No Image Uploaded</p>
-                    <p className="text-[10px]">Shows default serving board image</p>
-                  </div>
-                );
-              })()}
+            <div className="w-full h-44 rounded-2xl border-2 border-dashed border-[#E5DCDB] bg-[#FAF6EE] flex items-center justify-center p-3 relative overflow-hidden">
+              {ngImage ? (
+                <img
+                  src={getImageUrl(ngImage)}
+                  alt="Natural Goodness"
+                  className="max-h-full max-w-full object-contain"
+                />
+              ) : (
+                <div className="text-center text-[#685B55] space-y-1">
+                  <ImageIcon size={24} className="mx-auto text-[#E88D36]" />
+                  <p className="text-xs font-bold uppercase">No Image Uploaded</p>
+                </div>
+              )}
+              {ngUploading && (
+                <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
+                  <RefreshCw className="animate-spin text-[#E88D36]" size={20} />
+                </div>
+              )}
             </div>
-
-            <div className="flex items-center gap-2">
-              <input
-                ref={naturalGoodnessInputRef}
-                type="file"
-                accept="image/png,image/jpeg,image/webp"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) handleNaturalGoodnessImageUpload(f);
-                }}
-                className="hidden"
-                id="natural-goodness-upload-input"
-              />
-              <label
-                htmlFor="natural-goodness-upload-input"
-                className="flex-1 text-center py-2 px-4 rounded-xl bg-[#285B3C] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#1e4429] cursor-pointer shadow-sm transition"
-              >
-                {uploadingNaturalGoodness ? "Uploading..." : "Upload New Image"}
-              </label>
-            </div>
-            <p className="text-[10px] text-[#685B55]">
-              This image appears in the Natural Goodness section on the landing page. Formats: PNG, JPG, WebP. Max 5 MB.
-            </p>
+            <input
+              type="file"
+              id="ng-image-input"
+              accept="image/png,image/jpeg,image/webp"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handleNaturalGoodnessImageUpload(f);
+              }}
+              className="hidden"
+            />
+            <label
+              htmlFor="ng-image-input"
+              className="w-full block text-center py-2 px-4 rounded-xl bg-[#2C221E] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#3D302B] cursor-pointer shadow-sm transition"
+            >
+              Upload New Image
+            </label>
           </div>
 
-          <div className="md:col-span-7 space-y-3">
-            <p className="text-xs font-bold uppercase tracking-wider text-[#2C221E]">
-              About This Section
-            </p>
-            <p className="text-sm text-[#685B55] leading-relaxed">
-              The Natural Goodness section showcases your product alongside the brand mascot. Upload a high-quality image of your product (e.g., a serving board, pouch lineup, or lifestyle shot) to display here. The image is immediately live upon upload — no Publish step required.
+          {/* Heading & Tagline */}
+          <div className="md:col-span-7 space-y-4">
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#2C221E] mb-1.5">
+                Heading
+              </label>
+              <input
+                type="text"
+                value={naturalGoodnessDraft.title}
+                onChange={(e) =>
+                  setNaturalGoodnessDraft({ ...naturalGoodnessDraft, title: e.target.value })
+                }
+                placeholder="e.g. NATURAL GOODNESS"
+                className="w-full px-4 py-2.5 rounded-xl border border-[#E5DCDB] text-sm font-semibold text-[#2C221E] focus:outline-none focus:border-[#E88D36]"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#2C221E] mb-1.5">
+                Tagline
+              </label>
+              <input
+                type="text"
+                value={naturalGoodnessDraft.subtitle}
+                onChange={(e) =>
+                  setNaturalGoodnessDraft({ ...naturalGoodnessDraft, subtitle: e.target.value })
+                }
+                placeholder="e.g. HEALTHY YOU · BETTER TOMORROW"
+                className="w-full px-4 py-2.5 rounded-xl border border-[#E5DCDB] text-sm font-medium text-[#2C221E] focus:outline-none focus:border-[#E88D36]"
+              />
+            </div>
+            <p className="text-[11px] text-[#685B55]">
+              Heading and tagline save with "Save Draft" / "Publish Live" above. The image updates immediately.
             </p>
           </div>
         </div>
       </div>
+      
+      </>
+      ) : (
+        <div className="w-full">
+          <AdminReviewsPage />
+        </div>
+      )}
+
+      {/* ── FOOTER PUBLISH BAR ── */}
 
       <div className="fixed bottom-0 left-64 right-0 bg-white/95 backdrop-blur-md border-t border-[#E5DCDB] px-8 py-4 flex items-center justify-between shadow-2xl z-40">
         <div className="flex items-center gap-2">

@@ -31,6 +31,11 @@ class ReviewUpdate(BaseModel):
     is_published: Optional[bool] = None
 
 
+class FetchGoogleReviews(BaseModel):
+    place_id: str
+    api_key: Optional[str] = None
+
+
 class ReviewPublicOut(BaseModel):
     """Returned to the customer frontend — only published reviews."""
     model_config = ConfigDict(from_attributes=True)

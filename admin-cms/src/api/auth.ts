@@ -31,7 +31,10 @@ export interface TokenResponse {
   mfa_token?: string;
 }
 
-// Backend LoginRequest schema uses email+password as JSON (NOT form-data)
+export function getAuthToken(): string | null {
+  return localStorage.getItem("access_token") || localStorage.getItem("jacral_access_token");
+}
+
 export async function login(data: LoginRequest): Promise<TokenResponse> {
   const res = await apiClient.post<TokenResponse>("/api/v1/auth/login", {
     email: data.email,

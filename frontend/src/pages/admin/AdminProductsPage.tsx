@@ -28,6 +28,7 @@ interface Product {
   price: number;
   stock: number;
   is_active: boolean;
+  featured: boolean;
   category_id: number | null;
   image_url?: string | null;
   hover_image_url?: string | null;
@@ -56,6 +57,7 @@ export default function AdminProductsPage() {
     price: "",
     stock: "",
     category_id: "",
+    featured: false,
   });
 
   // Manage Multiple Images Modal for existing products
@@ -93,6 +95,7 @@ export default function AdminProductsPage() {
       price: "",
       stock: "",
       category_id: "",
+      featured: false,
     });
     setPrimaryImageFile(null);
     setHoverImageFile(null);
@@ -169,6 +172,7 @@ export default function AdminProductsPage() {
         price: Number(formData.price),
         stock: Number(formData.stock),
         category_id: formData.category_id ? Number(formData.category_id) : null,
+        featured: formData.featured,
       });
 
       const productId = response.data.id;
@@ -198,6 +202,21 @@ export default function AdminProductsPage() {
       await fetchData();
     } catch (error) {
       console.error("Failed to toggle status:", error);
+    }
+  };
+
+  // "Featured" controls whether a product appears in the homepage
+  // "Our Products" section — uses the generic product-update endpoint
+  // since there's no dedicated /featured route (same as how price or
+  // stock edits would go through PATCH /api/v1/admin/products/{id}).
+  const handleToggleFeatured = async (productId: number, currentFeatured: boolean) => {
+    try {
+      await apiClient.patch(`/api/v1/admin/products/${productId}`, {
+        featured: !currentFeatured,
+      });
+      await fetchData();
+    } catch (error) {
+      console.error("Failed to toggle featured:", error);
     }
   };
 
@@ -327,6 +346,20 @@ export default function AdminProductsPage() {
               </div>
 
               <div>
+                <label className="flex items-center gap-2.5 cursor-pointer mt-7">
+                  <input
+                    type="checkbox"
+                    checked={formData.featured}
+                    onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
+                    className="w-4 h-4 rounded text-[#3B6E4C] focus:ring-[#3B6E4C]"
+                  />
+                  <span className="text-xs font-black uppercase tracking-wider text-[#2C221E]">
+                    Show in "Our Products" on Home Page
+                  </span>
+                </label>
+              </div>
+
+              <div>
                 <label className="block text-xs font-black uppercase tracking-wider text-[#2C221E] mb-1.5">
                   Description *
                 </label>
@@ -450,6 +483,7 @@ export default function AdminProductsPage() {
                 <th className="py-4 px-6">Stock</th>
                 <th className="py-4 px-6">Images Setup</th>
                 <th className="py-4 px-6">Status</th>
+                <th className="py-4 px-6">Featured</th>
                 <th className="py-4 px-6 text-right">Actions</th>
               </tr>
             </thead>
@@ -482,18 +516,16 @@ export default function AdminProductsPage() {
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-2">
                       <span
-                        className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${
-                          p.image_url ? "bg-[#3B6E4C]/10 text-[#3B6E4C]" : "bg-gray-100 text-gray-400"
-                        }`}
+                        className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${p.image_url ? "bg-[#3B6E4C]/10 text-[#3B6E4C]" : "bg-gray-100 text-gray-400"
+                          }`}
                       >
                         Main: {p.image_url ? "✓" : "–"}
                       </span>
                       <span
-                        className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${
-                          p.hover_image_url
+                        className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${p.hover_image_url
                             ? "bg-[#E88D36]/10 text-[#E88D36]"
                             : "bg-gray-100 text-gray-400"
-                        }`}
+                          }`}
                       >
                         Hover: {p.hover_image_url ? "✓" : "–"}
                       </span>
@@ -501,14 +533,26 @@ export default function AdminProductsPage() {
                   </td>
                   <td className="py-4 px-6">
                     <span
-                      className={`text-xs font-black uppercase px-2.5 py-1 rounded-full ${
-                        p.is_active
+                      className={`text-xs font-black uppercase px-2.5 py-1 rounded-full ${p.is_active
                           ? "bg-emerald-100 text-emerald-800"
                           : "bg-gray-100 text-gray-600"
-                      }`}
+                        }`}
                     >
                       {p.is_active ? "Active" : "Inactive"}
                     </span>
+                  </td>
+                  <td className="py-4 px-6">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleFeatured(p.id, p.featured)}
+                      title={p.featured ? "Remove from Home Page" : "Show on Home Page"}
+                      className={`text-xs font-black uppercase px-2.5 py-1 rounded-full transition-colors ${p.featured
+                          ? "bg-[#FFB800]/20 text-[#B38300] hover:bg-[#FFB800]/30"
+                          : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                        }`}
+                    >
+                      {p.featured ? "★ Featured" : "Not Featured"}
+                    </button>
                   </td>
                   <td className="py-4 px-6 text-right">
                     <div className="inline-flex items-center gap-2">
@@ -523,11 +567,10 @@ export default function AdminProductsPage() {
                       <button
                         type="button"
                         onClick={() => handleToggleStatus(p.id, p.is_active)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
-                          p.is_active
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${p.is_active
                             ? "text-[#E88D36] hover:bg-[#E88D36]/10"
                             : "text-[#3B6E4C] hover:bg-[#3B6E4C]/10"
-                        }`}
+                          }`}
                       >
                         {p.is_active ? "Deactivate" : "Activate"}
                       </button>
@@ -537,7 +580,7 @@ export default function AdminProductsPage() {
               ))}
               {products.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="text-center py-12 text-[#685B55]">
+                  <td colSpan={7} className="text-center py-12 text-[#685B55]">
                     No products found. Click "Add Product" to create one.
                   </td>
                 </tr>

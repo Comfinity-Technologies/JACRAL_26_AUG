@@ -25,6 +25,7 @@ interface Product {
   price: number;
   stock: number;
   is_active: boolean;
+  featured: boolean;
   category_id: number | null;
   image_url?: string | null;
   hover_image_url?: string | null;
@@ -53,6 +54,7 @@ export default function AdminProductsPage() {
     price: "",
     stock: "",
     category_id: "",
+    featured: false,
   });
 
   // Manage Multiple Images Modal
@@ -166,6 +168,7 @@ export default function AdminProductsPage() {
         price: Number(formData.price),
         stock: Number(formData.stock),
         category_id: formData.category_id ? Number(formData.category_id) : null,
+        featured: formData.featured,
       });
 
       const productId = response.data.id;
@@ -184,6 +187,17 @@ export default function AdminProductsPage() {
       alert(error?.response?.data?.detail || "Failed to create product.");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleToggleFeatured = async (productId: number, currentFeatured: boolean) => {
+    try {
+      await apiClient.patch(`/api/v1/admin/products/${productId}`, {
+        featured: !currentFeatured,
+      });
+      await fetchData();
+    } catch (error) {
+      console.error("Failed to toggle featured:", error);
     }
   };
 
@@ -335,6 +349,19 @@ export default function AdminProductsPage() {
                   className="w-full px-4 py-3 rounded-xl border border-[#E5DCDB] focus:border-[#3B6E4C] outline-none text-sm font-medium resize-none"
                 />
               </div>
+
+              <div className="flex items-center gap-2 mt-4">
+                <input
+                  type="checkbox"
+                  id="featured-checkbox"
+                  checked={formData.featured}
+                  onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
+                  className="w-4 h-4 text-[#3B6E4C] rounded border-[#E5DCDB] focus:ring-[#3B6E4C]"
+                />
+                <label htmlFor="featured-checkbox" className="text-xs font-black uppercase tracking-wider text-[#2C221E] cursor-pointer">
+                  Set as Featured (Show on Homepage)
+                </label>
+              </div>
             </div>
 
             {/* MULTIPLE IMAGE UPLOAD SLOTS */}
@@ -446,6 +473,7 @@ export default function AdminProductsPage() {
                 <th className="py-4 px-6">Stock</th>
                 <th className="py-4 px-6">Images Setup</th>
                 <th className="py-4 px-6">Status</th>
+                <th className="py-4 px-6">Featured</th>
                 <th className="py-4 px-6 text-right">Actions</th>
               </tr>
             </thead>
@@ -506,6 +534,20 @@ export default function AdminProductsPage() {
                       {p.is_active ? "Active" : "Inactive"}
                     </span>
                   </td>
+                  <td className="py-4 px-6">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleFeatured(p.id, p.featured)}
+                      title={p.featured ? "Remove from Home Page" : "Show on Home Page"}
+                      className={`text-xs font-black uppercase px-2.5 py-1 rounded-full transition-colors cursor-pointer ${
+                        p.featured
+                          ? "bg-[#FFB800]/20 text-[#B38300] hover:bg-[#FFB800]/30"
+                          : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                      }`}
+                    >
+                      {p.featured ? "★ Featured" : "Not Featured"}
+                    </button>
+                  </td>
                   <td className="py-4 px-6 text-right">
                     <div className="inline-flex items-center gap-2">
                       <button
@@ -533,7 +575,7 @@ export default function AdminProductsPage() {
               ))}
               {products.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="text-center py-12 text-[#685B55]">
+                  <td colSpan={7} className="text-center py-12 text-[#685B55]">
                     No products found. Click "Add Product" to create one.
                   </td>
                 </tr>

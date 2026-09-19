@@ -5,6 +5,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from sqlalchemy import (
+    Boolean,
     CheckConstraint,
     DateTime,
     ForeignKey,
@@ -46,8 +47,40 @@ class Order(Base):
 
     total_amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
 
+    subtotal: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2), default=Decimal("0.00"), server_default=text("0.00"), nullable=False
+    )
+
     discount_amount: Mapped[Decimal] = mapped_column(
         Numeric(10, 2), default=Decimal("0.00"), server_default=text("0.00"), nullable=False
+    )
+
+    tax_amount: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2), default=Decimal("0.00"), server_default=text("0.00"), nullable=False
+    )
+
+    cgst_amount: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2), default=Decimal("0.00"), server_default=text("0.00"), nullable=False
+    )
+
+    sgst_amount: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2), default=Decimal("0.00"), server_default=text("0.00"), nullable=False
+    )
+
+    igst_amount: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2), default=Decimal("0.00"), server_default=text("0.00"), nullable=False
+    )
+
+    shipping_charge: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2), default=Decimal("0.00"), server_default=text("0.00"), nullable=False
+    )
+
+    accepted_terms: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default=text("false"), nullable=False
+    )
+
+    accepted_terms_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
     )
 
     coupon_id: Mapped[int | None] = mapped_column(

@@ -24,6 +24,8 @@ export default function CheckoutPage() {
   const [pincode, setPincode] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [isNewAddress, setIsNewAddress] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   /* ── Auth guard ── */
   if (!isAuthenticated) {
@@ -79,6 +81,11 @@ export default function CheckoutPage() {
 
     if (!name || !email || !phone || !address || !city || !state || !pincode) {
       setError("Please complete all delivery details.");
+      return;
+    }
+
+    if (!acceptedTerms) {
+      setError("You must accept the terms and conditions to place an order.");
       return;
     }
 
@@ -154,6 +161,28 @@ export default function CheckoutPage() {
                 {error}
               </div>
             )}
+
+            <div className="flex items-center gap-3 mb-6 p-4 rounded-xl bg-white border border-[#E5DCDB]">
+              <input
+                type="checkbox"
+                id="new-address"
+                checked={isNewAddress}
+                onChange={(e) => {
+                  setIsNewAddress(e.target.checked);
+                  if (e.target.checked) {
+                    setAddress("");
+                    setCity("");
+                    setState("");
+                    setPincode("");
+                    setPhone("");
+                  }
+                }}
+                className="w-4 h-4 text-[#3B6E4C] rounded border-gray-300 focus:ring-[#3B6E4C]"
+              />
+              <label htmlFor="new-address" className="text-sm font-bold text-[#2C221E] cursor-pointer">
+                Deliver to a new address / different phone number
+              </label>
+            </div>
 
             <div className="grid gap-5 md:grid-cols-2">
               <div className="md:col-span-2">
@@ -301,6 +330,19 @@ export default function CheckoutPage() {
                 <span>Total</span>
                 <span>₹{Math.max(0, total - couponDiscount)}</span>
               </div>
+            </div>
+
+            <div className="mb-5 flex items-start gap-3">
+              <input
+                type="checkbox"
+                id="terms"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                className="mt-1 w-4 h-4 text-[#E88D36] rounded border-white/20 bg-white/10 focus:ring-[#E88D36]"
+              />
+              <label htmlFor="terms" className="text-sm text-white/80 cursor-pointer">
+                I have read and agree to the website <a href="/terms" className="underline text-white" target="_blank">terms and conditions</a> *
+              </label>
             </div>
 
             <button

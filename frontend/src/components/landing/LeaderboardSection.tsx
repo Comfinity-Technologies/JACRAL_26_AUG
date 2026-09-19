@@ -16,6 +16,20 @@ const DEFAULT_LEADERBOARD: TopCustomer[] = [
   { user_id: -9, name: "Divya Nambiar", total_orders: 4, total_spent: "4,800", total_items_ordered: 11 },
   { user_id: -10, name: "Rohan Gupta", total_orders: 3, total_spent: "3,900", total_items_ordered: 9 },
   { user_id: -11, name: "Ishaan Verma", total_orders: 3, total_spent: "3,200", total_items_ordered: 7 },
+  { user_id: -12, name: "Aditi Rao", total_orders: 3, total_spent: "3,100", total_items_ordered: 7 },
+  { user_id: -13, name: "Kavya Singh", total_orders: 2, total_spent: "2,900", total_items_ordered: 6 },
+  { user_id: -14, name: "Nikhil Joshi", total_orders: 2, total_spent: "2,700", total_items_ordered: 6 },
+  { user_id: -15, name: "Riya Desai", total_orders: 2, total_spent: "2,500", total_items_ordered: 5 },
+  { user_id: -16, name: "Siddharth Jain", total_orders: 2, total_spent: "2,400", total_items_ordered: 5 },
+  { user_id: -17, name: "Tarun Kumar", total_orders: 2, total_spent: "2,200", total_items_ordered: 4 },
+  { user_id: -18, name: "Neha Patel", total_orders: 1, total_spent: "1,800", total_items_ordered: 4 },
+  { user_id: -19, name: "Aman Shah", total_orders: 1, total_spent: "1,600", total_items_ordered: 3 },
+  { user_id: -20, name: "Pooja Mehta", total_orders: 1, total_spent: "1,500", total_items_ordered: 3 },
+  { user_id: -21, name: "Ravi Shankar", total_orders: 1, total_spent: "1,300", total_items_ordered: 3 },
+  { user_id: -22, name: "Shruti Agarwal", total_orders: 1, total_spent: "1,200", total_items_ordered: 2 },
+  { user_id: -23, name: "Gaurav Bhatt", total_orders: 1, total_spent: "1,100", total_items_ordered: 2 },
+  { user_id: -24, name: "Manoj Tiwari", total_orders: 1, total_spent: "950", total_items_ordered: 2 },
+  { user_id: -25, name: "Swati Kapoor", total_orders: 1, total_spent: "800", total_items_ordered: 1 },
 ];
 
 // How many runner-up rows show before scrolling kicks in.

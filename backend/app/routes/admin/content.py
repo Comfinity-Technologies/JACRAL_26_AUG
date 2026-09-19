@@ -123,6 +123,7 @@ def get_admin_landing_page(
     draft_logo_url = setting_map.get("logo_url").draft_value if "logo_url" in setting_map else None
     favicon_url = setting_map.get("favicon_url").value if "favicon_url" in setting_map else None
     draft_favicon_url = setting_map.get("favicon_url").draft_value if "favicon_url" in setting_map else None
+    natural_goodness_image_url = setting_map.get("natural_goodness_image_url").value if "natural_goodness_image_url" in setting_map else None
 
     brand_out = BrandAdminOut(
         brand_name=brand_name or "JACRAL",
@@ -131,11 +132,27 @@ def get_admin_landing_page(
         draft_logo_url=draft_logo_url,
         favicon_url=favicon_url,
         draft_favicon_url=draft_favicon_url,
+        natural_goodness_image_url=natural_goodness_image_url,
         is_published=all(s.is_published for s in settings) if settings else True,
     )
 
     # Slides
     slides = db.query(LandingPageSlide).order_by(LandingPageSlide.display_order.asc(), LandingPageSlide.slide_number.asc()).all()
+    
+    if len(slides) < 3:
+        for i in range(len(slides) + 1, 4):
+            new_slide = LandingPageSlide(
+                slide_number=i,
+                display_order=i,
+                draft_title=f"Slide {i}",
+                is_published=False,
+                is_active=False,
+                draft_is_active=True
+            )
+            db.add(new_slide)
+        db.commit()
+        slides = db.query(LandingPageSlide).order_by(LandingPageSlide.display_order.asc(), LandingPageSlide.slide_number.asc()).all()
+        
     slide_outs = [HeroSlideAdminOut.model_validate(s) for s in slides]
 
     # Sections
@@ -817,47 +834,74 @@ async def admin_upload_step_image_by_id(
     return step
 
 
-# -------------------------------------------------------------
-# Natural Goodness Section Image Upload
-# -------------------------------------------------------------
-NATURAL_GOODNESS_DIR = UPLOAD_ROOT / "natural_goodness"
-NATURAL_GOODNESS_DIR.mkdir(parents=True, exist_ok=True)
-
-
 @router.post(
-    "/natural-goodness/image",
-    summary="Upload the Natural Goodness section product image",
+    "/landing-page/sections/{section_key}/image",
+    summary="Upload an image for a specific section (returns URL for JSON draft_content)",
 )
+async def upload_section_image(
+    section_key: str,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+):
+    """
+    Upload an image for a landing page section (e.g. natural_goodness carousel).
+    Returns the URL so the admin CMS can append it to the section's draft_content JSON.
+    """
+    section_dir = UPLOAD_ROOT / section_key
+    section_dir.mkdir(parents=True, exist_ok=True)
+    
+    filename, rel_url, file_size = await _save_upload_file(
+        file, section_dir, f"{section_key}_img"
+    )
+
+    is_remote = rel_url.startswith("http")
+    media = MediaAsset(
+        filename=filename,
+        original_name=file.filename or f"{section_key}_image",
+        file_path=rel_url if is_remote else str(section_dir / filename),
+        file_url=rel_url,
+        mime_type=file.content_type or "image/jpeg",
+        file_size=file_size,
+        asset_type=f"section_{section_key}",
+        uploader_id=admin.id,
+    )
+    db.add(media)
+    db.commit()
+
+    return {
+        "success": True,
+        "message": "Section image uploaded successfully!",
+        "image_url": rel_url,
+    }
+
+
+@router.post("/natural-goodness/image", summary="Upload natural goodness section product image")
 async def upload_natural_goodness_image(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
     admin: User = Depends(require_admin),
 ):
     """
-    Upload the product image shown in the Natural Goodness section of the landing page.
-    The URL is stored under the 'natural_goodness_image_url' website setting.
+    Upload the image displayed below the Natural Goodness writing.
+    Updates the 'natural_goodness_image_url' WebsiteSetting and makes it live immediately.
     """
-    filename, rel_url, file_size = await _save_upload_file(
-        file, NATURAL_GOODNESS_DIR, "natural_goodness"
-    )
+    filename, rel_url, file_size = await _save_upload_file(file, BRAND_DIR, "natural_goodness")
 
     is_remote = rel_url.startswith("http")
     media = MediaAsset(
         filename=filename,
-        original_name=file.filename or "natural_goodness",
-        file_path=rel_url if is_remote else str(NATURAL_GOODNESS_DIR / filename),
+        original_name=file.filename or "natural_goodness_image",
+        file_path=rel_url if is_remote else str(BRAND_DIR / filename),
         file_url=rel_url,
         mime_type=file.content_type or "image/jpeg",
         file_size=file_size,
-        asset_type="natural_goodness",
+        asset_type="brand_asset",
         uploader_id=admin.id,
     )
     db.add(media)
 
-    # Save to website_settings
-    setting = db.query(WebsiteSetting).filter(
-        WebsiteSetting.key == "natural_goodness_image_url"
-    ).first()
+    setting = db.query(WebsiteSetting).filter(WebsiteSetting.key == "natural_goodness_image_url").first()
     if not setting:
         setting = WebsiteSetting(
             key="natural_goodness_image_url",
@@ -874,18 +918,9 @@ async def upload_natural_goodness_image(
         setting.updated_by = admin.id
 
     db.commit()
-    audit_service.log_action(
-        db,
-        "NATURAL_GOODNESS_IMAGE_UPLOADED",
-        admin.id,
-        "website_setting",
-        "natural_goodness_image_url",
-        {"url": rel_url},
-    )
-    db.commit()
-
     return {
         "success": True,
-        "message": "Natural Goodness image uploaded successfully!",
+        "message": "Natural goodness image uploaded successfully!",
         "image_url": rel_url,
     }
+

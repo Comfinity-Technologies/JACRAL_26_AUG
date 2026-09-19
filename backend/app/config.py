@@ -76,6 +76,19 @@ class Settings(BaseSettings):
     SHIPROCKET_PASSWORD: Optional[str] = None
 
     # ------------------------------------------------------------------
+    # Google OAuth
+    # ------------------------------------------------------------------
+    GOOGLE_CLIENT_ID: Optional[str] = None
+    GOOGLE_CLIENT_SECRET: Optional[str] = None
+    GOOGLE_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/google/callback"
+
+    # ------------------------------------------------------------------
+    # Business Rules
+    # ------------------------------------------------------------------
+    GST_RATE: float = 0.05
+
+
+    # ------------------------------------------------------------------
     # Cloudinary Image Storage
     # ------------------------------------------------------------------
     CLOUDINARY_CLOUD_NAME: Optional[str] = None

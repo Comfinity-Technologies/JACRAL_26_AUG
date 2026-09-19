@@ -12,7 +12,35 @@ interface ReviewItem {
   rating: number;
 }
 
-const DEFAULT_REVIEWS: ReviewItem[] = [];
+const DEFAULT_REVIEWS: ReviewItem[] = [
+  {
+    id: -1,
+    customer_name: "Priya Sharma",
+    customer_location: "Bengaluru, Karnataka",
+    customer_image_url: null,
+    review_text:
+      "I switched to Jacral Oats two months ago and I feel so much more energetic! The vanilla cardamon flavour is absolutely delicious and keeps me full till lunch. Highly recommend to anyone looking for a healthy breakfast!",
+    rating: 5,
+  },
+  {
+    id: -2,
+    customer_name: "Rahul Verma",
+    customer_location: "Mumbai, Maharashtra",
+    customer_image_url: null,
+    review_text:
+      "Finally a cereal that's actually healthy and doesn't taste like cardboard. The jackfruit goodness is really there — you can feel the difference. My whole family loves the choco cinnamon flavour!",
+    rating: 5,
+  },
+  {
+    id: -3,
+    customer_name: "Deepa Nair",
+    customer_location: "Chennai, Tamil Nadu",
+    customer_image_url: null,
+    review_text:
+      "As a nutritionist, I am very selective about what I recommend to my clients. Jacral's oats are pure, natural, and genuinely nourishing. The ingredients are clean and the taste is fantastic!",
+    rating: 5,
+  },
+];
 
 export default function ReviewsSection() {
   const { reviews } = useReviews();
@@ -21,12 +49,9 @@ export default function ReviewsSection() {
   useEffect(() => {
     if (reviews && reviews.length > 0) {
       setItems(reviews);
-    } else {
-      setItems(DEFAULT_REVIEWS);
     }
+    // If no reviews from backend, keep showing hardcoded defaults
   }, [reviews]);
-
-  if (items.length === 0) return null;
 
   // Render initials avatar if no image
   const renderAvatar = (name: string, imageUrl?: string | null) => {

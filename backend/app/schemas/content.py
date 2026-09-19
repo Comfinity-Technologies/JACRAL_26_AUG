@@ -26,6 +26,7 @@ class BrandAdminOut(BaseModel):
     draft_logo_url: Optional[str] = None
     favicon_url: Optional[str] = None
     draft_favicon_url: Optional[str] = None
+    natural_goodness_image_url: Optional[str] = None
     is_published: bool = True
 
     model_config = ConfigDict(from_attributes=True)

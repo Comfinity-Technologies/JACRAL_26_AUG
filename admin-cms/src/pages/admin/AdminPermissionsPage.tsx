@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { ShieldCheck, Save, Loader2 } from "lucide-react";
-import { getAuthToken } from "../../utils/auth";
+import { getAuthToken } from "../../api/auth";
 
 interface Permission {
   id: number;

@@ -13,6 +13,7 @@ from app.models.payment import Payment
 from app.models.utm_visit import UtmVisit
 from app.models.audit_log import AuditLog
 from app.models.policy import Policy
+
 from app.models.content import (
     WebsiteSetting,
     LandingPageSlide,
@@ -22,7 +23,7 @@ from app.models.content import (
 from app.models.review import CustomerReview
 from app.models.how_to_use import HowToUseStep
 from app.models.role_permissions import RolePermission
-
+from app.models.deals import Deal
 
 __all__ = [
     "User",
@@ -44,5 +45,6 @@ __all__ = [
     "MediaAsset",
     "CustomerReview",
     "HowToUseStep",
-    "RolePermission",
+    "RolePermission"
+    "Deal",
 ]

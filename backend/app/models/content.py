@@ -13,8 +13,8 @@ from sqlalchemy import (
     String,
     Text,
     func,
+    JSON
 )
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 
 from app.database import Base
@@ -91,8 +91,8 @@ class LandingPageSection(Base):
     subtitle = Column(String(255), nullable=True)
 
     # Content stored as JSON for flexible schemas per section
-    content = Column(JSONB, nullable=True)  # Published content
-    draft_content = Column(JSONB, nullable=True)  # Draft content
+    content = Column(JSON, nullable=True)  # Published content
+    draft_content = Column(JSON, nullable=True)  # Draft content
 
     is_active = Column(Boolean, default=True, nullable=False)
     draft_is_active = Column(Boolean, default=True, nullable=False)

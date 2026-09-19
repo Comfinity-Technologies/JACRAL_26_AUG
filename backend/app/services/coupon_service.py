@@ -2,8 +2,7 @@
 JACRAL – Coupon service.
 Server-side coupon validation and discount calculation.
 """
-from datetime import datetime, timezone
-from decimal import Decimal
+from datetime import datetime
 from typing import Optional
 
 from sqlalchemy.orm import Session
@@ -13,11 +12,7 @@ from app.utils.calculations import apply_coupon
 
 
 def get_valid_coupon(db: Session, code: str) -> Optional[Coupon]:
-    """
-    Fetch a coupon by code if it is active and within its validity period.
-    Returns None if invalid.
-    """
-    now = datetime.now(timezone.utc)
+    now = datetime.utcnow()
     coupon = (
         db.query(Coupon)
         .filter(
@@ -29,42 +24,48 @@ def get_valid_coupon(db: Session, code: str) -> Optional[Coupon]:
 
     if coupon is None:
         return None
-
-    if coupon.starts_at and coupon.starts_at > now:
+    if coupon.valid_from and coupon.valid_from > now:
         return None
-
-    if coupon.expires_at and coupon.expires_at < now:
+    if coupon.valid_until and coupon.valid_until < now:
         return None
-
     if coupon.usage_limit is not None and coupon.used_count >= coupon.usage_limit:
         return None
 
     return coupon
 
 
-def validate_coupon(
-    db: Session,
-    code: str,
-    order_amount: Decimal,
-) -> dict:
+def get_featured_public_coupons(db: Session) -> list[Coupon]:
     """
-    Validate a coupon code against an order amount.
-    Returns a dict with valid flag, discount amount, and message.
+    Fetch coupons that are active, marked is_featured (i.e. explicitly chosen
+    in the admin panel to appear in the homepage banner), and within their
+    validity window.
     """
+    now = datetime.utcnow()
+    return (
+        db.query(Coupon)
+        .filter(Coupon.is_active.is_(True))
+        .filter(Coupon.is_featured.is_(True))
+        .filter((Coupon.valid_from.is_(None)) | (Coupon.valid_from <= now))
+        .filter((Coupon.valid_until.is_(None)) | (Coupon.valid_until >= now))
+        .filter(
+            (Coupon.usage_limit.is_(None)) | (Coupon.used_count < Coupon.usage_limit)
+        )
+        .order_by(Coupon.updated_at.desc())
+        .all()
+    )
+
+
+def validate_coupon(db: Session, code: str, order_amount: float) -> dict:
     coupon = get_valid_coupon(db, code)
 
     if coupon is None:
-        return {
-            "valid": False,
-            "code": code,
-            "message": "Coupon code is invalid or has expired.",
-        }
+        return {"valid": False, "code": code, "message": "Coupon code is invalid or has expired."}
 
-    if order_amount < coupon.minimum_order_amount:
+    if order_amount < coupon.min_purchase_amount:
         return {
             "valid": False,
             "code": code,
-            "message": f"Minimum order amount ₹{coupon.minimum_order_amount} required.",
+            "message": f"Minimum order amount ₹{coupon.min_purchase_amount} required.",
         }
 
     discount = apply_coupon(coupon, order_amount)
@@ -80,7 +81,6 @@ def validate_coupon(
 
 
 def increment_coupon_usage(db: Session, coupon: Coupon) -> None:
-    """Atomically increment the coupon used_count within a transaction."""
     locked_coupon = db.query(Coupon).filter(Coupon.id == coupon.id).with_for_update().first()
     if locked_coupon:
         locked_coupon.used_count += 1

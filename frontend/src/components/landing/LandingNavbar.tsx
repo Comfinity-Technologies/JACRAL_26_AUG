@@ -3,7 +3,6 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
   ShoppingBag,
   User as UserIcon,
-  Search,
   Menu,
   X,
   Leaf,
@@ -29,11 +28,8 @@ export default function LandingNavbar({
 
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
 
-  const searchInputRef = useRef<HTMLInputElement>(null);
   const accountMenuRef = useRef<HTMLDivElement>(null);
 
   /*
@@ -54,23 +50,6 @@ export default function LandingNavbar({
       window.removeEventListener("scroll", onScroll);
     };
   }, []);
-
-  /*
-   * ---------------------------------------------------------
-   * SEARCH AUTO FOCUS
-   * ---------------------------------------------------------
-   */
-  useEffect(() => {
-    if (!searchOpen) return;
-
-    const timer = window.setTimeout(() => {
-      searchInputRef.current?.focus();
-    }, 100);
-
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [searchOpen]);
 
   /*
    * ---------------------------------------------------------
@@ -99,29 +78,6 @@ export default function LandingNavbar({
       );
     };
   }, []);
-
-  /*
-   * ---------------------------------------------------------
-   * SEARCH
-   * ---------------------------------------------------------
-   */
-  const handleSearchSubmit = (
-    event: React.FormEvent
-  ) => {
-    event.preventDefault();
-
-    const query = searchQuery.trim();
-
-    if (!query) return;
-
-    navigate(
-      `/shop?search=${encodeURIComponent(query)}`
-    );
-
-    setSearchOpen(false);
-    setSearchQuery("");
-    setMobileOpen(false);
-  };
 
   /*
    * ---------------------------------------------------------
@@ -190,7 +146,6 @@ export default function LandingNavbar({
             aria-label="JACRAL Home"
             onClick={() => {
               setMobileOpen(false);
-              setSearchOpen(false);
               setAccountMenuOpen(false);
             }}
             className="flex items-center gap-4 flex-shrink-0 group"
@@ -232,18 +187,14 @@ export default function LandingNavbar({
 
           {/* =================================================
               RIGHT SIDE
-              HOME / SHOP / SEARCH / LOGIN / CART
+              HOME / SHOP / LOGIN / CART
               ================================================= */}
           <div className="flex items-center flex-1 justify-end gap-2">
 
             {/* -----------------------------------------------
-                DESKTOP NAVIGATION (hidden when search open)
+                DESKTOP NAVIGATION
                 ----------------------------------------------- */}
-            <nav
-              className={`hidden md:flex items-center gap-8 mr-4 transition-all duration-200 ${
-                searchOpen ? "opacity-0 pointer-events-none w-0 mr-0 overflow-hidden" : "opacity-100"
-              }`}
-            >
+            <nav className="hidden md:flex items-center gap-8 mr-4">
 
               <NavLink
                 to="/"
@@ -273,64 +224,6 @@ export default function LandingNavbar({
             </nav>
 
             {/* -----------------------------------------------
-                INLINE SEARCH BAR (expands in same row)
-                ----------------------------------------------- */}
-            <form
-              onSubmit={handleSearchSubmit}
-              className={`hidden md:flex items-center gap-2 rounded-full border transition-all duration-300 overflow-hidden ${
-                searchOpen
-                  ? "flex-1 max-w-md px-4 py-2 border-[#E88D36] bg-[#FAF6EE]"
-                  : "w-0 border-transparent pointer-events-none opacity-0"
-              }`}
-            >
-              <Search size={16} className="text-[#E88D36] flex-shrink-0" />
-              <input
-                ref={searchInputRef}
-                type="text"
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="Search products..."
-                className="flex-1 bg-transparent outline-none text-sm text-[#2C221E] placeholder:text-[#685B55]/50 min-w-0"
-              />
-              <button
-                type="button"
-                onClick={() => { setSearchOpen(false); setSearchQuery(""); }}
-                className="text-[#A8988E] hover:text-[#2C221E] transition flex-shrink-0"
-                aria-label="Close search"
-              >
-                <X size={14} />
-              </button>
-            </form>
-
-            {/* -----------------------------------------------
-                SEARCH TOGGLE BUTTON
-                ----------------------------------------------- */}
-            <button
-              type="button"
-              onClick={() => {
-                setSearchOpen(
-                  (previous) => !previous
-                );
-                setAccountMenuOpen(false);
-              }}
-              className="p-2.5 rounded-full text-[#2C221E] hover:text-[#E88D36] hover:bg-[#FAF6EE] transition-colors"
-              aria-label="Search products"
-              aria-expanded={searchOpen}
-            >
-              {searchOpen ? (
-                <X
-                  size={21}
-                  strokeWidth={2}
-                />
-              ) : (
-                <Search
-                  size={21}
-                  strokeWidth={2}
-                />
-              )}
-            </button>
-
-            {/* -----------------------------------------------
                 LOGIN / ACCOUNT
                 ----------------------------------------------- */}
             {!isAuthenticated ? (
@@ -352,7 +245,6 @@ export default function LandingNavbar({
                     setAccountMenuOpen(
                       (previous) => !previous
                     );
-                    setSearchOpen(false);
                   }}
                   className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#3B6E4C]/10 border border-[#3B6E4C]/20 text-[#3B6E4C] text-[12px] font-bold uppercase tracking-[0.08em]"
                   aria-expanded={accountMenuOpen}
@@ -466,7 +358,6 @@ export default function LandingNavbar({
                 setMobileOpen(
                   (previous) => !previous
                 );
-                setSearchOpen(false);
                 setAccountMenuOpen(false);
               }}
               className="md:hidden ml-2 p-2.5 rounded-full text-[#2C221E] hover:bg-[#FAF6EE]"

@@ -27,7 +27,7 @@ interface AvailableCoupon {
   description?: string;
   discount_type: string;
   discount_value: number;
-  min_order_amount?: number;
+  min_purchase_amount?: number;
 }
 
 export default function CartPage() {
@@ -49,25 +49,14 @@ export default function CartPage() {
   const [showCoupons, setShowCoupons] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
-  // Load available coupons from backend
+  // Load the admin-featured, currently-active coupons from the backend.
   useEffect(() => {
-    const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
-    fetch(`${baseUrl}/api/v1/content/coupons`)
-      .then((r) => r.json())
-      .then((data) => {
-        if (Array.isArray(data)) setAvailableCoupons(data);
+    apiClient
+      .get<AvailableCoupon[]>("/api/v1/coupons/active")
+      .then((res) => {
+        if (Array.isArray(res.data)) setAvailableCoupons(res.data);
       })
-      .catch(() => {
-        // fallback: show a known default coupon
-        setAvailableCoupons([
-          {
-            code: "JACRAL10",
-            description: "10% off on your first order",
-            discount_type: "percentage",
-            discount_value: 10,
-          },
-        ]);
-      });
+      .catch(() => setAvailableCoupons([]));
   }, []);
 
   const handleApplyCoupon = async () => {
@@ -99,11 +88,32 @@ export default function CartPage() {
     setCouponError("");
   };
 
-  const handleCopyCode = (code: string) => {
-    navigator.clipboard.writeText(code).catch(() => {});
-    setCouponCode(code);
+  const handleCopyAndApply = async (code: string) => {
+    navigator.clipboard.writeText(code).catch(() => { });
     setCopiedCode(code);
     setTimeout(() => setCopiedCode(null), 2000);
+
+    // Apply it immediately too, so the customer doesn't have to paste it
+    // into the box themselves.
+    setCouponError("");
+    setCouponLoading(true);
+    try {
+      const res = await apiClient.post("/api/v1/coupons/validate", {
+        code,
+        order_amount: subtotal,
+      });
+      const { valid, discount_amount, message } = res.data;
+      if (valid) {
+        setAppliedCoupon({ code, discount: discount_amount });
+        setCouponCode("");
+      } else {
+        setCouponError(message || "Invalid coupon code.");
+      }
+    } catch {
+      setCouponError("Could not validate coupon. Please try again.");
+    } finally {
+      setCouponLoading(false);
+    }
   };
 
   const finalTotal = total - (appliedCoupon?.discount || 0);
@@ -283,19 +293,22 @@ export default function CartPage() {
                             <p className="text-xs text-[#685B55]">
                               {c.description || `Get ${c.discount_type === "percentage" ? `${c.discount_value}%` : `₹${c.discount_value}`} off your order`}
                             </p>
-                            {c.min_order_amount && (
-                              <p className="text-[10px] text-[#A8988E] mt-0.5">Min. order ₹{c.min_order_amount}</p>
+                            {!!c.min_purchase_amount && (
+                              <p className="text-[10px] text-[#A8988E] mt-0.5">Min. order ₹{c.min_purchase_amount}</p>
                             )}
                           </div>
                           <button
                             type="button"
-                            onClick={() => handleCopyCode(c.code)}
-                            className="flex items-center gap-1.5 text-xs font-bold text-[#E88D36] hover:text-[#D47E2A] transition flex-shrink-0 border border-[#E88D36]/30 rounded-lg px-2.5 py-1.5"
+                            onClick={() => handleCopyAndApply(c.code)}
+                            disabled={couponLoading || appliedCoupon?.code === c.code}
+                            className="flex items-center gap-1.5 text-xs font-bold text-[#E88D36] hover:text-[#D47E2A] transition flex-shrink-0 border border-[#E88D36]/30 rounded-lg px-2.5 py-1.5 disabled:opacity-60"
                           >
-                            {copiedCode === c.code ? (
+                            {appliedCoupon?.code === c.code ? (
                               <><Check size={12} /> Applied</>
+                            ) : copiedCode === c.code ? (
+                              <><Check size={12} /> Copied</>
                             ) : (
-                              <><Copy size={12} /> Apply</>
+                              <><Copy size={12} /> Copy & Apply</>
                             )}
                           </button>
                         </div>

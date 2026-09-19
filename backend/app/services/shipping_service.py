@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 _SHIPROCKET_AUTH_URL = "https://apiv2.shiprocket.in/v1/external/auth/login"
 _SHIPROCKET_ORDER_URL = "https://apiv2.shiprocket.in/v1/external/orders/create/adhoc"
 _SHIPROCKET_TRACK_URL = "https://apiv2.shiprocket.in/v1/external/courier/track/shipment/{}"
+_SHIPROCKET_SERVICEABILITY_URL = "https://apiv2.shiprocket.in/v1/external/courier/serviceability/"
 
 _token_cache: dict = {}
 
@@ -27,7 +28,7 @@ async def _get_token() -> Optional[str]:
 
     cached = _token_cache.get("token")
     expires_at = _token_cache.get("expires_at", 0)
-    
+
     if cached and time.time() < expires_at:
         return cached
 
@@ -49,6 +50,82 @@ async def _get_token() -> Optional[str]:
             return token
     except Exception as exc:
         logger.error("Shiprocket auth failed: %s", exc)
+        return None
+
+
+async def get_serviceability_and_rate(
+    pickup_pincode: str,
+    delivery_pincode: str,
+    weight: float = 0.5,
+    cod: bool = False,
+) -> Optional[dict]:
+    """
+    Checks Shiprocket courier serviceability and returns the cheapest available
+    courier's rate for the given pickup → delivery route.
+
+    Returns a dict with at least:
+        { "courier_name": str, "rate": float, "estimated_delivery_days": int }
+
+    Returns None if:
+    - Shiprocket is not configured
+    - The API call fails (network error, timeout, invalid credentials)
+    - No couriers are available for this route
+    - Any other exception
+
+    Graceful degradation: caller should fall back to a flat-rate or ₹0 shipping.
+    """
+    if not settings.shiprocket_configured:
+        logger.debug("Shiprocket not configured – skipping serviceability check")
+        return None
+
+    token = await _get_token()
+    if not token:
+        return None
+
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(
+                _SHIPROCKET_SERVICEABILITY_URL,
+                params={
+                    "pickup_postcode": pickup_pincode,
+                    "delivery_postcode": delivery_pincode,
+                    "weight": weight,
+                    "cod": 1 if cod else 0,
+                },
+                headers={"Authorization": f"Bearer {token}"},
+                timeout=10,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+
+        # The Shiprocket serviceability response nests available couriers under
+        # data.data.available_courier_companies (list), each with "rate", "etd" etc.
+        couriers = (
+            data.get("data", {})
+            .get("available_courier_companies", [])
+        )
+
+        if not couriers:
+            logger.info(
+                "No couriers available for route %s → %s",
+                pickup_pincode,
+                delivery_pincode,
+            )
+            return None
+
+        # Pick the cheapest
+        cheapest = min(couriers, key=lambda c: float(c.get("rate", 9999)))
+        return {
+            "courier_name": cheapest.get("courier_name", ""),
+            "rate": float(cheapest.get("rate", 0)),
+            "estimated_delivery_days": cheapest.get("estimated_delivery_days", 0),
+        }
+
+    except Exception as exc:
+        logger.error(
+            "Shiprocket serviceability check failed (%s → %s): %s",
+            pickup_pincode, delivery_pincode, exc,
+        )
         return None
 
 
@@ -102,6 +179,7 @@ async def get_tracking(shipment_id: str) -> Optional[dict]:
         logger.error("Shiprocket tracking failed for %s: %s", shipment_id, exc)
         return None
 
+
 def create_shipment_background(order_id: int) -> None:
     """Synchronous wrapper to run create_shipment in a background task."""
     try:
@@ -135,17 +213,17 @@ def create_shipment_background(order_id: int) -> None:
             "height": 10,
             "weight": 1
         }
-        
+
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         resp = loop.run_until_complete(create_shipment(order_data))
         loop.close()
-        
+
         if resp and resp.get("shipment_id"):
             order.shipment_id = str(resp.get("shipment_id"))
             db.commit()
             logger.info("Shipment created successfully for order %s", order.id)
-            
+
         db.close()
     except Exception as exc:
         logger.error("Failed to run background shipment creation for order %s: %s", order_id, exc)

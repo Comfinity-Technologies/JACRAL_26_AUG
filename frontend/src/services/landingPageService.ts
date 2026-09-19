@@ -240,3 +240,19 @@ export async function adminUploadHowToUseStepImage(stepId: number, file: File) {
   );
   return response.data;
 }
+
+/**
+ * Admin: Upload the Natural Goodness section's product image.
+ * Publishes immediately (same pattern as the brand logo upload) —
+ * no separate "Publish" click needed for this one image.
+ */
+export async function uploadNaturalGoodnessImage(file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+  const response = await apiClient.post(
+    "/api/v1/admin/content/natural-goodness/image",
+    formData,
+    { headers: { "Content-Type": "multipart/form-data" } }
+  );
+  return response.data;
+}

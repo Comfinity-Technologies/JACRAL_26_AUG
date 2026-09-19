@@ -42,7 +42,7 @@ export default function LandingPage({ showNavFooter = false }: LandingPageProps)
 
 
       {/* ── 6. NATURAL GOODNESS (MASCOT + SERVING BOARD SHOWCASE) ── */}
-      <NaturalGoodnessSection brand={brand} />
+      <NaturalGoodnessSection brand={brand} section={sections["natural_goodness"]} />
 
       {/* ── 7. RIBBON DIVIDER (3D WAVED STITCHED RIBBON) ── */}
       <RibbonDivider />
@@ -59,4 +59,3 @@ export default function LandingPage({ showNavFooter = false }: LandingPageProps)
     </div>
   );
 }
-

@@ -29,6 +29,11 @@ export default function AdminReviewsPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingReview, setEditingReview] = useState<ReviewItem | null>(null);
 
+  // Google Fetch state
+  const [showGoogleModal, setShowGoogleModal] = useState(false);
+  const [googlePlaceId, setGooglePlaceId] = useState("");
+  const [isFetchingGoogle, setIsFetchingGoogle] = useState(false);
+
   const [formData, setFormData] = useState({
     customer_name: "",
     customer_location: "",
@@ -97,6 +102,23 @@ export default function AdminReviewsPage() {
     }
   };
 
+  const handleFetchGoogle = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!googlePlaceId.trim()) return;
+    try {
+      setIsFetchingGoogle(true);
+      const res = await apiClient.post("/api/v1/admin/reviews/fetch-google", { place_id: googlePlaceId });
+      alert(res.data.message);
+      setShowGoogleModal(false);
+      setGooglePlaceId("");
+      fetchReviews();
+    } catch (err: any) {
+      alert(err.response?.data?.detail || "Failed to fetch from Google API");
+    } finally {
+      setIsFetchingGoogle(false);
+    }
+  };
+
   const handleDelete = async (id: number) => {
     if (!confirm("Are you sure you want to delete this customer review?")) return;
     try {
@@ -147,13 +169,22 @@ export default function AdminReviewsPage() {
           </p>
         </div>
 
-        <button
-          onClick={openCreateModal}
-          className="flex items-center gap-2 px-5 py-2.5 bg-[#3B6E4C] hover:bg-[#2C5238] text-white rounded-full font-bold shadow-sm transition-all hover:scale-105 active:scale-95"
-        >
-          <Plus size={18} />
-          Add Review
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowGoogleModal(true)}
+            className="flex items-center gap-2 px-5 py-2.5 bg-white border-2 border-[#E88D36] text-[#E88D36] hover:bg-[#FAF6EE] rounded-full font-bold shadow-sm transition-all hover:scale-105 active:scale-95"
+          >
+            <Sparkles size={18} />
+            Fetch from Google
+          </button>
+          <button
+            onClick={openCreateModal}
+            className="flex items-center gap-2 px-5 py-2.5 bg-[#3B6E4C] hover:bg-[#2C5238] text-white rounded-full font-bold shadow-sm transition-all hover:scale-105 active:scale-95"
+          >
+            <Plus size={18} />
+            Add Review
+          </button>
+        </div>
       </div>
 
       {/* Reviews Grid */}
@@ -355,6 +386,68 @@ export default function AdminReviewsPage() {
                   className="px-6 py-2.5 bg-[#3B6E4C] hover:bg-[#2C5238] text-white rounded-full font-bold shadow-sm transition-all"
                 >
                   {editingReview ? "Save Changes" : "Create Review"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Google Fetch Modal */}
+      {showGoogleModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-xl animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-2xl font-bold text-[#2C221E] flex items-center gap-2">
+                <Sparkles className="text-[#E88D36]" size={24} />
+                Fetch Google Reviews
+              </h2>
+              <button
+                onClick={() => setShowGoogleModal(false)}
+                className="text-gray-400 hover:text-gray-600 p-2"
+              >
+                <XCircle size={24} />
+              </button>
+            </div>
+
+            <p className="text-sm text-[#685B55] mb-6">
+              Enter your Google Place ID to automatically pull the top 5 most relevant reviews. Reviews will be added as <strong>drafts</strong> so you can approve them before they go live on your website.
+            </p>
+
+            <form onSubmit={handleFetchGoogle} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#685B55] mb-1">
+                  Google Place ID *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={googlePlaceId}
+                  onChange={(e) => setGooglePlaceId(e.target.value)}
+                  placeholder="e.g. ChIJN1t_tDeuEmsRUsoyG83frY4"
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#3B6E4C]"
+                />
+                <p className="text-xs text-gray-400 mt-2">
+                  <a href="https://developers.google.com/maps/documentation/places/web-service/place-id" target="_blank" rel="noreferrer" className="text-blue-500 hover:underline">
+                    Find your Place ID
+                  </a>
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => setShowGoogleModal(false)}
+                  className="px-5 py-2.5 rounded-full text-gray-600 hover:bg-gray-100 font-semibold transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isFetchingGoogle || !googlePlaceId.trim()}
+                  className="px-6 py-2.5 bg-[#E88D36] hover:bg-[#D77C25] disabled:opacity-50 text-white rounded-full font-bold shadow-sm transition-all"
+                >
+                  {isFetchingGoogle ? "Fetching..." : "Fetch Reviews"}
                 </button>
               </div>
             </form>

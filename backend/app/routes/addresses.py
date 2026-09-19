@@ -1,10 +1,11 @@
 """
 JACRAL – Address routes.
 
-GET    /api/v1/addresses       CUSTOMER
-POST   /api/v1/addresses       CUSTOMER
-PATCH  /api/v1/addresses/{id}  CUSTOMER
-DELETE /api/v1/addresses/{id}  CUSTOMER
+GET    /api/v1/addresses/              List saved addresses (ordered: default first)
+POST   /api/v1/addresses/             Add a new address
+PATCH  /api/v1/addresses/{id}         Update address fields
+PATCH  /api/v1/addresses/{id}/default Set as default (unsets all other defaults atomically)
+DELETE /api/v1/addresses/{id}         Delete address
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -34,7 +35,11 @@ def list_addresses(current_user: User = Depends(require_customer), db: Session =
 
 
 @router.post("/", response_model=AddressOut, status_code=status.HTTP_201_CREATED, summary="Add address")
-def create_address(data: AddressCreate, current_user: User = Depends(require_customer), db: Session = Depends(get_db)):
+def create_address(
+    data: AddressCreate,
+    current_user: User = Depends(require_customer),
+    db: Session = Depends(get_db),
+):
     if data.is_default:
         db.query(Address).filter(Address.user_id == current_user.id).update({"is_default": False})
     address = Address(**data.model_dump(), user_id=current_user.id)
@@ -45,7 +50,12 @@ def create_address(data: AddressCreate, current_user: User = Depends(require_cus
 
 
 @router.patch("/{address_id}", response_model=AddressOut, summary="Update address")
-def update_address(address_id: int, data: AddressUpdate, current_user: User = Depends(require_customer), db: Session = Depends(get_db)):
+def update_address(
+    address_id: int,
+    data: AddressUpdate,
+    current_user: User = Depends(require_customer),
+    db: Session = Depends(get_db),
+):
     address = db.query(Address).filter(Address.id == address_id).first()
     _assert_owns(address, current_user)
     if data.is_default:
@@ -57,8 +67,42 @@ def update_address(address_id: int, data: AddressUpdate, current_user: User = De
     return address
 
 
+@router.patch(
+    "/{address_id}/default",
+    response_model=AddressOut,
+    summary="Set address as default (atomically unsets all others)",
+)
+def set_default_address(
+    address_id: int,
+    current_user: User = Depends(require_customer),
+    db: Session = Depends(get_db),
+):
+    """
+    Sets the given address as the user's default delivery address.
+    In the same transaction, clears the is_default flag on all other
+    addresses belonging to this user — no race condition possible.
+    """
+    address = db.query(Address).filter(Address.id == address_id).first()
+    _assert_owns(address, current_user)
+
+    # Unset all other defaults for this user
+    db.query(Address).filter(
+        Address.user_id == current_user.id,
+        Address.id != address_id,
+    ).update({"is_default": False})
+
+    address.is_default = True
+    db.commit()
+    db.refresh(address)
+    return address
+
+
 @router.delete("/{address_id}", summary="Delete address")
-def delete_address(address_id: int, current_user: User = Depends(require_customer), db: Session = Depends(get_db)):
+def delete_address(
+    address_id: int,
+    current_user: User = Depends(require_customer),
+    db: Session = Depends(get_db),
+):
     address = db.query(Address).filter(Address.id == address_id).first()
     _assert_owns(address, current_user)
     db.delete(address)

@@ -13,6 +13,9 @@ import {
   FileText,
   Download,
   Layers,
+  Star,
+  MessageSquare,
+  Percent,
 } from "lucide-react";
 
 // Admin roles in JACRAL system
@@ -49,7 +52,9 @@ const AdminLayout = () => {
 
   // Only ADMIN, SUPER_ADMIN, PRO_ADMIN get Coupons, Exports, Policies, and Landing Page CMS
   if (["ADMIN", "SUPER_ADMIN", "PRO_ADMIN"].includes(user.role)) {
-    navItems.push({ name: "Coupons", path: "/coupons", icon: Tag });
+    navItems.push({ name: "Coupons", path: "/coupons", icon: Percent });
+    navItems.push({ name: "Deals / Offers", path: "/deals", icon: Star });
+    navItems.push({ name: "Reviews", path: "/reviews", icon: MessageSquare });
     navItems.push({ name: "Exports", path: "/exports", icon: Download });
     navItems.push({ name: "Policies", path: "/policies", icon: FileText });
     navItems.push({ name: "Landing Page", path: "/landing-page", icon: Layers });

@@ -40,6 +40,8 @@ from app.routes.admin.exports import router as admin_exports_router
 from app.routes.admin.content import router as admin_content_router
 from app.routes.admin.reviews import router as admin_reviews_router
 from app.routes.admin.permissions import router as admin_permissions_router
+from app.routes.deals import router as deals_router
+from app.routes.admin.deals import router as admin_deals_router
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -126,6 +128,7 @@ app.include_router(analytics_router, prefix="/api/v1/analytics")
 app.include_router(policies_router, prefix="/api/v1/policies")
 app.include_router(content_router, prefix="/api/v1/content")
 app.include_router(reviews_router, prefix="/api/v1/reviews")
+app.include_router(deals_router, prefix="/api/v1/deals")
 
 # Admin routes
 app.include_router(admin_users_router, prefix="/api/v1/admin/users")
@@ -138,3 +141,4 @@ app.include_router(admin_exports_router, prefix="/api/v1/admin/exports")
 app.include_router(admin_content_router, prefix="/api/v1/admin/content")
 app.include_router(admin_reviews_router, prefix="/api/v1/admin/reviews")
 app.include_router(admin_permissions_router, prefix="/api/v1/admin/users/permissions")
+app.include_router(admin_deals_router, prefix="/api/v1/admin/deals")

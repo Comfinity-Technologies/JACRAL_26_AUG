@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import { Leaf, Truck, ShieldCheck, Heart, Sparkles } from "lucide-react";
+import { Leaf, Truck, ShieldCheck, Heart, Sparkles, ArrowRight, PackageSearch } from "lucide-react";
+import { Link } from "react-router-dom";
 import ProductCard from "../customer/ProductCard";
 import { useProducts } from "../../hooks/useProducts";
 
@@ -10,7 +11,12 @@ interface ProductsSectionProps {
 export default function ProductsSection({ section }: ProductsSectionProps = {}) {
   const { products, isLoading } = useProducts();
 
-  const activeProducts = products.filter((product) => product.is_active !== false);
+  // Only products with "Show in Our Products on Home Page" checked in the
+  // Admin Panel (Products → featured) appear here — this is the homepage
+  // spotlight, not the full catalog (that's /shop).
+  const activeProducts = products.filter(
+    (product) => product.is_active !== false && product.featured === true
+  );
 
   return (
     <section
@@ -19,11 +25,8 @@ export default function ProductsSection({ section }: ProductsSectionProps = {}) 
         relative
         isolate
         overflow-hidden
+        bg-[#FAF6EE]
       "
-      style={{
-        background:
-          "linear-gradient(160deg, #F8EED9 0%, #F2E4C5 35%, #EDE0C8 65%, #F0E8D0 100%)",
-      }}
     >
       {/* =========================================================
           SECTION ANIMATION + DECORATIVE KEYFRAMES
@@ -173,283 +176,6 @@ export default function ProductsSection({ section }: ProductsSectionProps = {}) 
           }
         `}
       </style>
-
-      {/* =========================================================
-          IMAGE-BASED FLOATING BACKGROUND
-          ========================================================= */}
-
-      <div
-        className="
-          pointer-events-none
-          absolute
-          inset-0
-          -z-10
-          overflow-hidden
-        "
-        aria-hidden="true"
-      >
-        {/* Warm cream center glow */}
-        <div
-          className="
-            absolute
-            left-1/2
-            top-[38%]
-            h-[700px]
-            w-[1100px]
-            -translate-x-1/2
-            rounded-full
-            opacity-70
-            blur-[110px]
-          "
-          style={{ background: "radial-gradient(ellipse, #FFF4DC 0%, #F5E4B0 50%, transparent 80%)" }}
-        />
-
-        {/* Brown ambient glow — bottom-left */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            width: "500px",
-            height: "400px",
-            borderRadius: "50%",
-            background: "radial-gradient(ellipse at 20% 80%, rgba(139,69,19,0.09) 0%, transparent 65%)",
-          }}
-        />
-
-        {/* Green ambient glow — top-right */}
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            right: 0,
-            width: "600px",
-            height: "500px",
-            borderRadius: "50%",
-            background: "radial-gradient(ellipse at 80% 20%, rgba(49,94,66,0.08) 0%, transparent 65%)",
-          }}
-        />
-
-        {/* Red accent glow — top-center */}
-        <div
-          style={{
-            position: "absolute",
-            top: "-100px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: "400px",
-            height: "300px",
-            borderRadius: "50%",
-            background: "radial-gradient(ellipse, rgba(192,68,34,0.05) 0%, transparent 70%)",
-          }}
-        />
-
-        {/* Removed animated cereals */}
-
-        {/* =======================================================
-            TROPICAL LEAVES
-            ======================================================= */}
-
-        {/* Leaf — bottom-left */}
-        <img
-          src="/images/tropical_leaf.png"
-          alt=""
-          className="jacral-float-medium"
-          style={{
-            position: "absolute",
-            left: "7%",
-            bottom: "9%",
-            width: "135px",
-            height: "135px",
-            objectFit: "contain",
-            opacity: 0.88,
-            filter: "drop-shadow(0 8px 18px rgba(30,80,40,0.18))",
-            transform: "rotate(-25deg)",
-          }}
-        />
-
-        {/* Leaf — right lower */}
-        <img
-          src="/images/tropical_leaf.png"
-          alt=""
-          className="jacral-float-slow"
-          style={{
-            position: "absolute",
-            right: "6%",
-            bottom: "22%",
-            width: "112px",
-            height: "112px",
-            objectFit: "contain",
-            opacity: 0.82,
-            filter: "drop-shadow(0 7px 16px rgba(30,80,40,0.15))",
-            transform: "rotate(20deg) scaleX(-1)",
-          }}
-        />
-
-        {/* Leaf — left mid */}
-        <img
-          src="/images/tropical_leaf.png"
-          alt=""
-          className="jacral-drift"
-          style={{
-            position: "absolute",
-            left: "14%",
-            top: "38%",
-            width: "70px",
-            height: "70px",
-            objectFit: "contain",
-            opacity: 0.72,
-            filter: "drop-shadow(0 5px 10px rgba(30,80,40,0.14))",
-            transform: "rotate(10deg)",
-          }}
-        />
-
-        {/* Leaf — top-right small */}
-        <img
-          src="/images/tropical_leaf.png"
-          alt=""
-          className="jacral-float-medium"
-          style={{
-            position: "absolute",
-            right: "15%",
-            top: "10%",
-            width: "75px",
-            height: "75px",
-            objectFit: "contain",
-            opacity: 0.70,
-            filter: "drop-shadow(0 5px 10px rgba(30,80,40,0.12))",
-            transform: "rotate(-15deg) scaleX(-1)",
-          }}
-        />
-
-        {/* =======================================================
-            OAT GRAIN CLUSTERS
-            ======================================================= */}
-
-        <img
-          src="/images/oat_grains.png"
-          alt=""
-          className="jacral-drift"
-          style={{
-            position: "absolute",
-            left: "18%",
-            top: "18%",
-            width: "100px",
-            height: "100px",
-            objectFit: "contain",
-            opacity: 0.85,
-            filter: "drop-shadow(0 4px 8px rgba(100,70,20,0.14))",
-            transform: "rotate(-15deg)",
-          }}
-        />
-
-        <img
-          src="/images/oat_grains.png"
-          alt=""
-          className="jacral-float-medium"
-          style={{
-            position: "absolute",
-            right: "17%",
-            top: "22%",
-            width: "82px",
-            height: "82px",
-            objectFit: "contain",
-            opacity: 0.80,
-            filter: "drop-shadow(0 3px 7px rgba(100,70,20,0.12))",
-            transform: "rotate(18deg)",
-          }}
-        />
-
-        <img
-          src="/images/oat_grains.png"
-          alt=""
-          className="jacral-float-slow"
-          style={{
-            position: "absolute",
-            right: "3%",
-            bottom: "7%",
-            width: "90px",
-            height: "90px",
-            objectFit: "contain",
-            opacity: 0.75,
-            filter: "drop-shadow(0 4px 8px rgba(100,70,20,0.12))",
-            transform: "rotate(32deg)",
-          }}
-        />
-
-        <img
-          src="/images/oat_grains.png"
-          alt=""
-          className="jacral-float-medium"
-          style={{
-            position: "absolute",
-            left: "27%",
-            bottom: "9%",
-            width: "72px",
-            height: "72px",
-            objectFit: "contain",
-            opacity: 0.70,
-            filter: "drop-shadow(0 3px 6px rgba(100,70,20,0.11))",
-            transform: "rotate(-30deg)",
-          }}
-        />
-
-        {/* =======================================================
-            SMALL ACCENT DOTS
-            ======================================================= */}
-
-        <span
-          className="
-            jacral-pulse
-            absolute
-            left-[23%]
-            top-[12%]
-            h-4
-            w-4
-            rounded-full
-            bg-[#B9C86E]
-          "
-        />
-
-        <span
-          className="
-            jacral-pulse
-            absolute
-            right-[24%]
-            top-[14%]
-            h-3
-            w-3
-            rounded-full
-            bg-[#E4A55D]
-          "
-        />
-
-        <span
-          className="
-            absolute
-            left-[16%]
-            bottom-[26%]
-            h-3
-            w-3
-            rotate-45
-            rounded-[35%]
-            bg-[#D9A64C]/50
-          "
-        />
-
-        <span
-          className="
-            absolute
-            right-[18%]
-            bottom-[28%]
-            h-4
-            w-4
-            rotate-[-20deg]
-            rounded-full
-            bg-[#3B6D4D]/25
-          "
-        />
-      </div>
 
       {/* =========================================================
           GREEN BENEFIT STRIP (FULL WIDTH, TOUCHING HERO)
@@ -670,39 +396,135 @@ export default function ProductsSection({ section }: ProductsSectionProps = {}) 
         </div>
 
         {/* =======================================================
-            TWO PRODUCTS
+            PRODUCT GRID
+            — Widened from a fixed 2-up spotlight to an adaptive grid
+              (2 / 3 / 4 columns) so the homepage surfaces more of the
+              catalog at a glance. Narrow product exposure on the
+              homepage is a well-documented conversion risk (Baymard
+              Institute guideline #237): visitors who only see 1–2
+              items tend to underestimate how much a store carries.
             ======================================================= */}
 
-        <div
-          className="
-            relative
-            mx-auto
-            grid
-            max-w-[1050px]
-            grid-cols-1
-            gap-5
-            md:grid-cols-2
-            lg:gap-20
-          "
-        >
-          {activeProducts.map((product, index) => (
-            <div
-              key={product.id}
+        {isLoading ? (
+          <div
+            className="
+              mx-auto
+              grid
+              max-w-[1320px]
+              grid-cols-1
+              gap-5
+              sm:grid-cols-2
+              lg:grid-cols-3
+              xl:grid-cols-4
+            "
+          >
+            {[...Array(4)].map((_, i) => (
+              <ProductSkeleton key={i} />
+            ))}
+          </div>
+        ) : activeProducts.length === 0 ? (
+          <div
+            className="
+              jacral-reveal
+              mx-auto
+              flex
+              max-w-md
+              flex-col
+              items-center
+              gap-3
+              rounded-[28px]
+              border
+              border-[#DED2BE]
+              bg-white/70
+              px-8
+              py-14
+              text-center
+            "
+          >
+            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#E9E1C9]">
+              <PackageSearch size={24} className="text-[#315E42]" strokeWidth={1.6} />
+            </span>
+            <p className="text-sm font-bold uppercase tracking-wider text-[#315E42]">
+              JACRAL — Mark products as "Featured" in the Admin Panel
+            </p>
+          </div>
+        ) : (
+          <div
+            className={`
+              relative
+              mx-auto
+              grid
+              grid-cols-1
+              gap-6
+              sm:grid-cols-2
+              lg:gap-8
+              ${activeProducts.length <= 2
+                ? "max-w-[1050px] md:grid-cols-2 lg:gap-20"
+                : "max-w-[1320px] lg:grid-cols-3 xl:grid-cols-4"
+              }
+            `}
+          >
+            {activeProducts.slice(0, 8).map((product, index) => (
+              <div
+                key={product.id}
+                className="
+                  jacral-reveal
+                  relative
+                "
+                style={{
+                  animationDelay: `${(index % 4 + 1) * 150}ms`,
+                }}
+              >
+                <ProductCard
+                  product={product}
+                  showDescription={false}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* =======================================================
+            SHOP ALL CTA
+            — Homepage shows a curated slice; this is the bridge to
+              the full catalog on /shop.
+            ======================================================= */}
+
+        {!isLoading && activeProducts.length > 0 && (
+          <div className="jacral-reveal mt-14 flex justify-center sm:mt-16">
+            <Link
+              to="/shop"
               className="
-                jacral-reveal
-                relative
+                group
+                inline-flex
+                items-center
+                gap-2.5
+                rounded-full
+                border-2
+                border-[#28543C]
+                px-8
+                py-3.5
+                text-sm
+                font-bold
+                uppercase
+                tracking-[0.12em]
+                text-[#28543C]
+                transition-all
+                duration-200
+                hover:bg-[#28543C]
+                hover:text-white
+                hover:shadow-[0_10px_28px_rgba(40,84,60,0.28)]
               "
-              style={{
-                animationDelay: `${(index % 4 + 1) * 150}ms`,
-              }}
             >
-              <ProductCard
-                product={product}
-                showDescription={false}
+              Shop All Products
+              <ArrowRight
+                size={16}
+                strokeWidth={2.5}
+                className="transition-transform duration-200 group-hover:translate-x-1"
               />
-            </div>
-          ))}
-        </div>
+            </Link>
+          </div>
+        )}
 
         {/* =======================================================
             BOTTOM DECORATIVE LINE
@@ -910,48 +732,7 @@ function OatCluster({
   );
 }
 
-/* ================================================================
-   CODED LEAF BRANCH
-   ================================================================ */
 
-function LeafBranch({
-  className = "",
-}: {
-  className?: string;
-}) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 100 100"
-      fill="none"
-    >
-      <path
-        d="M14 88C30 63 52 39 84 14"
-        stroke="#315E42"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-
-      <path
-        d="M31 63C18 59 12 49 13 38C25 39 34 47 36 56"
-        fill="#70964D"
-        opacity=".7"
-      />
-
-      <path
-        d="M47 46C38 37 38 26 43 17C54 22 59 31 56 40"
-        fill="#86A85B"
-        opacity=".65"
-      />
-
-      <path
-        d="M63 32C65 20 74 13 85 11C84 23 77 31 68 37"
-        fill="#5E8A48"
-        opacity=".7"
-      />
-    </svg>
-  );
-}
 
 /* ================================================================
    LOADING SKELETON

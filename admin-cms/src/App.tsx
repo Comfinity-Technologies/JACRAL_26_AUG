@@ -19,6 +19,7 @@ import AdminExportsPage from "./pages/admin/AdminExportsPage";
 import AdminPoliciesPage from "./pages/admin/AdminPoliciesPage";
 import AdminLandingPageCMS from "./pages/admin/AdminLandingPageCMS";
 import AdminReviewsPage from "./pages/admin/AdminReviewsPage";
+import AdminDealsPage from "./pages/admin/AdminDealsPage";
 
 const router = createBrowserRouter([
   { path: "/login", element: <AdminLoginPage /> },
@@ -41,6 +42,7 @@ const router = createBrowserRouter([
       { path: "landing-page", element: <AdminLandingPageCMS /> },
       { path: "content/landing-page", element: <AdminLandingPageCMS /> },
       { path: "reviews", element: <AdminReviewsPage /> },
+      { path: "deals", element: <AdminDealsPage /> },
       { path: "*", element: <Navigate to="/dashboard" replace /> },
     ],
   },

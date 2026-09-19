@@ -7,7 +7,7 @@ export default function AdminMFASetupPage() {
   const { user } = useAuth();
   
   const [loading, setLoading] = useState(false);
-  const [setupData, setSetupData] = useState<{ secret: string; qr_code_svg: string; uri: string } | null>(null);
+  const [setupData, setSetupData] = useState<{ secret: string; qr_code_svg: string; qr_code_image: string; uri: string } | null>(null);
   const [verificationCode, setVerificationCode] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -115,7 +115,7 @@ export default function AdminMFASetupPage() {
               </p>
               
               <div className="bg-[#FAF6EE] p-6 rounded-2xl flex justify-center border border-[#E5DCDB] mb-6">
-                <div dangerouslySetInnerHTML={{ __html: setupData.qr_code_svg }} className="w-48 h-48" />
+                <img src={setupData.qr_code_image} alt="MFA QR Code" className="w-48 h-48" />
               </div>
               
               <div className="bg-white border border-[#E5DCDB] rounded-xl p-4 text-center">

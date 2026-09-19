@@ -7,6 +7,7 @@ export interface BrandInfo {
   tagline?: string;
   logo_url?: string | null;
   favicon_url?: string | null;
+  natural_goodness_image_url?: string | null;
 }
 
 export interface BrandAdminInfo extends BrandInfo {
@@ -79,3 +80,14 @@ export interface AdminLandingPageData {
   sections: Record<string, SectionAdmin>;
   has_unpublished_changes: boolean;
 }
+
+export interface SiteSettings {
+  contact_email?: string | null;
+  contact_phone?: string | null;
+  contact_address?: string | null;
+  social_instagram?: string | null;
+  social_facebook?: string | null;
+  social_twitter?: string | null;
+  social_linkedin?: string | null;
+}
+

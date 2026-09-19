@@ -29,7 +29,7 @@ export interface ProductCardProps {
 export default function ProductCard({
   product,
   onAddToCart,
-  showDescription = true,
+  showDescription = false,
 }: ProductCardProps) {
   const { addToCart } = useCart();
   const navigate = useNavigate();
@@ -86,10 +86,6 @@ export default function ProductCard({
           0%   { transform: scale(0.75); opacity: 0; }
           100% { transform: scale(1);    opacity: 1; }
         }
-        @keyframes dotBlink {
-          0%, 100% { opacity: 0.6; transform: scale(1);   }
-          50%       { opacity: 1;   transform: scale(1.5); }
-        }
         @keyframes groundShadowPulse {
           0%, 100% { transform: translateX(-50%) scaleX(1);   opacity: 0.20; }
           50%       { transform: translateX(-50%) scaleX(0.85); opacity: 0.30; }
@@ -98,12 +94,11 @@ export default function ProductCard({
         .pc-img-levitate        { animation: imgLevitate         5.2s ease-in-out infinite; }
         .pc-shimmer             { animation: shimmer3D            3.0s ease-in-out infinite 1.5s; }
         .pc-badge-pop           { animation: badgePop             0.5s cubic-bezier(.22,1,.36,1) both; }
-        .pc-dot-blink           { animation: dotBlink             2.1s ease-in-out infinite; }
         .pc-ground-shadow-pulse { animation: groundShadowPulse    5.2s ease-in-out infinite; }
 
         @media (prefers-reduced-motion: reduce) {
           .pc-img-levitate, .pc-shimmer, .pc-badge-pop,
-          .pc-dot-blink, .pc-ground-shadow-pulse {
+          .pc-ground-shadow-pulse {
             animation: none !important;
           }
         }
@@ -144,22 +139,6 @@ export default function ProductCard({
           to={productUrl}
           className="relative block w-full pt-2 px-6 pb-2"
         >
-
-
-          {/* Red accent dot (top-right) */}
-          <div
-            className="pc-dot-blink"
-            style={{
-              position: "absolute",
-              top: "22px",
-              right: "26px",
-              width: "7px",
-              height: "7px",
-              borderRadius: "50%",
-              background: "radial-gradient(circle, #E05A35 0%, #C04422 100%)",
-              boxShadow: "0 0 7px rgba(192,68,34,0.55)",
-            }}
-          />
 
           {/* Product Image directly in the card */}
           <div className="relative w-full aspect-[1.2/1] flex items-center justify-center pt-4">

@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { getImageUrl } from "../../utils/image";
-import type { BrandInfo } from "../../types/landingPage";
+import type { BrandInfo, LandingPageSection } from "../../types/landingPage";
 
 interface NaturalGoodnessSectionProps {
   brand?: BrandInfo | null;
+  section?: LandingPageSection;
 }
 
 const MASCOT_POSES = [
@@ -24,8 +25,13 @@ const MASCOT_POSES = [
   },
 ];
 
-export default function NaturalGoodnessSection({ brand }: NaturalGoodnessSectionProps) {
+export default function NaturalGoodnessSection({ brand, section }: NaturalGoodnessSectionProps) {
   const [activePoseIdx, setActivePoseIdx] = useState(0);
+
+  // Admin-editable heading & tagline (Admin Panel → Landing Page → Natural
+  // Goodness). Falls back to the original copy if nothing's been set yet.
+  const heading = section?.title || "NATURAL GOODNESS";
+  const tagline = section?.subtitle || "HEALTHY YOU · BETTER TOMORROW";
 
   // Resolve the product image: admin-uploaded takes priority, fallback to default
   const productImageUrl = brand?.natural_goodness_image_url
@@ -46,14 +52,6 @@ export default function NaturalGoodnessSection({ brand }: NaturalGoodnessSection
       className="relative overflow-hidden py-16 sm:py-24 bg-[#FAF6EE] select-none"
     >
       <style>{`
-        @keyframes ngFloatSlow {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50%      { transform: translateY(-10px) rotate(2deg); }
-        }
-        @keyframes ngFloatMedium {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50%      { transform: translateY(-8px) rotate(-3deg); }
-        }
         @keyframes ngPulseGlow {
           0%, 100% { opacity: 0.5; transform: scale(1); }
           50%      { opacity: 0.8; transform: scale(1.06); }
@@ -62,39 +60,15 @@ export default function NaturalGoodnessSection({ brand }: NaturalGoodnessSection
           0%, 100% { transform: translateY(0px); }
           50%      { transform: translateY(-6px); }
         }
-        .ng-float-slow   { animation: ngFloatSlow 6s ease-in-out infinite; }
-        .ng-float-medium { animation: ngFloatMedium 5s ease-in-out infinite; }
         .ng-glow         { animation: ngPulseGlow 7s ease-in-out infinite; }
         .mascot-sway     { animation: mascotSway 4.5s ease-in-out infinite; }
       `}</style>
 
-      {/* Ambient background glows */}
+      {/* Ambient background glow */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
         <div
           className="ng-glow absolute left-1/2 top-1/2 h-[500px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[90px]"
           style={{ background: "radial-gradient(circle, rgba(245,228,176,0.6) 0%, transparent 70%)" }}
-        />
-
-        {/* Drifting Leaves */}
-        <img
-          src="/images/tropical_leaf.png"
-          alt=""
-          className="ng-float-slow absolute left-[8%] top-[12%] w-12 h-12 opacity-80 rotate-[-20deg]"
-        />
-        <img
-          src="/images/tropical_leaf.png"
-          alt=""
-          className="ng-float-medium absolute right-[12%] top-[18%] w-10 h-10 opacity-75 rotate-[25deg]"
-        />
-        <img
-          src="/images/tropical_leaf.png"
-          alt=""
-          className="ng-float-slow absolute right-[6%] bottom-[20%] w-14 h-14 opacity-80 rotate-[-15deg]"
-        />
-        <img
-          src="/images/tropical_leaf.png"
-          alt=""
-          className="ng-float-medium absolute left-[15%] bottom-[10%] w-10 h-10 opacity-60 rotate-[40deg]"
         />
       </div>
 
@@ -120,9 +94,8 @@ export default function NaturalGoodnessSection({ brand }: NaturalGoodnessSection
                     key={pose.src}
                     src={pose.src}
                     alt={pose.alt}
-                    className={`absolute bottom-0 w-full h-full object-contain object-bottom transition-opacity duration-700 ease-in-out ${
-                      idx === activePoseIdx ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
-                    }`}
+                    className={`absolute bottom-0 w-full h-full object-contain object-bottom transition-opacity duration-700 ease-in-out ${idx === activePoseIdx ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
+                      }`}
                     style={{
                       filter: "drop-shadow(0 18px 30px rgba(50,30,10,0.14))",
                     }}
@@ -136,12 +109,12 @@ export default function NaturalGoodnessSection({ brand }: NaturalGoodnessSection
                   className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-[#285B3C] leading-tight"
                   style={{ fontFamily: '"Playfair Display", Georgia, serif' }}
                 >
-                  NATURAL<br />GOODNESS
+                  {heading}
                 </h2>
                 <div className="flex items-center gap-2 mt-2">
                   <span className="h-px w-5 bg-[#3B6E4C]/40" />
                   <span className="text-[10px] sm:text-xs font-black uppercase tracking-[0.18em] text-[#3B6E4C] leading-snug">
-                    HEALTHY YOU · BETTER TOMORROW
+                    {tagline}
                   </span>
                 </div>
               </div>
@@ -155,11 +128,10 @@ export default function NaturalGoodnessSection({ brand }: NaturalGoodnessSection
                   type="button"
                   onClick={() => setActivePoseIdx(idx)}
                   aria-label={`Show pose ${idx + 1}`}
-                  className={`h-2 rounded-full transition-all duration-300 ${
-                    idx === activePoseIdx
+                  className={`h-2 rounded-full transition-all duration-300 ${idx === activePoseIdx
                       ? "w-6 bg-[#285B3C]"
                       : "w-2 bg-[#285B3C]/25 hover:bg-[#285B3C]/50"
-                  }`}
+                    }`}
                 />
               ))}
             </div>
@@ -174,12 +146,12 @@ export default function NaturalGoodnessSection({ brand }: NaturalGoodnessSection
                 className="text-4xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-[#285B3C]"
                 style={{ fontFamily: '"Playfair Display", Georgia, serif' }}
               >
-                NATURAL GOODNESS
+                {heading}
               </h2>
               <div className="flex items-center justify-center lg:justify-start gap-3">
                 <span className="h-px w-6 sm:w-8 bg-[#3B6E4C]/40" />
                 <span className="text-xs sm:text-sm font-black uppercase tracking-[0.24em] text-[#3B6E4C]">
-                  HEALTHY YOU &nbsp;·&nbsp; BETTER TOMORROW
+                  {tagline}
                 </span>
                 <span className="h-px w-6 sm:w-8 bg-[#3B6E4C]/40" />
               </div>
